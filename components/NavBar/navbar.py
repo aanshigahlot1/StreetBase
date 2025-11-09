@@ -23,15 +23,16 @@ def navbar():
     if st.session_state.get("logged_in", False):
         username = st.session_state.get("username", "")
         auth_html = f"""
-        <div class="profile-wrap" id="profileWrap">
-            <button class="profile-btn" id="profileBtn">👤 {username}</button>
-            <div class="dropdown-content" id="dropdownMenu">
-                <a href="#" id="logoutBtn">Sign Out</a>
+        <div class='profile-wrap' id='profileWrap'>
+            <button class='profile-btn' id='profileBtn'>👤 {username}</button>
+            <div class='dropdown-content' id='dropdownMenu'>
+                <a href='?page=Signin&logout=true' id='logoutBtn'>Sign Out</a>
             </div>
         </div>
-        """
+        """.strip()
+
     else:
-        auth_html = '<a href="?page=login_signup" class="login-btn">Login / Sign Up</a>'
+        auth_html = '<a href="?page=Signin" class="login-btn">Login / Sign Up</a>'
 
     # ---------- NAVBAR HTML ----------
     html = f"""
@@ -39,7 +40,7 @@ def navbar():
         /* NAVBAR STYLING */
         .smartbricks-nav {{
             position: fixed;
-            top: 0; /* now at very top */
+            top: 0;
             left: 0;
             width: 100%;
             background: #003366;
@@ -135,8 +136,6 @@ def navbar():
         .profile-wrap.show .dropdown-content {{
             display: block;
         }}
-
-        /* Reduce top padding for page content */
         .block-container {{
             padding-top: 100px !important;
         }}
@@ -173,13 +172,8 @@ def navbar():
                 profileWrap.classList.remove('show');
             }}
         }});
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {{
-            logoutBtn.addEventListener('click', () => {{
-                window.location.href = "?page=home&logout=true";
-            }});
-        }}
     </script>
     """
 
     st.markdown(html, unsafe_allow_html=True)
+    

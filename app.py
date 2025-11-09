@@ -27,11 +27,17 @@ st.markdown("""
 navbar()
 
 # ---------------- LOGOUT HANDLER ----------------
-if "logout" in st.query_params:
+# ---------------- LOGOUT HANDLER ----------------
+query_params = st.query_params
+if "logout" in query_params and query_params["logout"] == "true":
     st.session_state.logged_in = False
     st.session_state.username = ""
+    # Clear logout param and redirect to home
     st.query_params.clear()
+    st.query_params["page"] = "home"
     st.rerun()
+
+
 
 # ---------------- PAGE ROUTING ----------------
 page = st.query_params.get("page", "home")
@@ -70,9 +76,9 @@ try:
         import pages.AboutUs as about_us
         about_us.load_about_us_page()
 
-    elif page == "login_signup":
+    elif page == "Signin":
         import pages.Signin as signin
-        signin.load_login_signup_page()
+        signin.load_signin_page()
 
     else:
         st.error("404 - Page not found 😢")
