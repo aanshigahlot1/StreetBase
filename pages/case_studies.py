@@ -1,4 +1,12 @@
-import streamlit as st
+# --- put these 5 lines at the very top ---
+from pathlib import Path
+import streamlit as st 
+import sys
+ROOT = Path(__file__).resolve().parents[1]  # points to .../SmartBricks
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+# -----------------------------------------
+
 from components.NavBar.navbar import navbar
 
 def load_case_studies_page():
