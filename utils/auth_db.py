@@ -2,14 +2,7 @@
 import sqlite3
 import hashlib
 
-import os
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_DIR = os.path.join(BASE_DIR, "..", "data")  # will store inside /data folder
-os.makedirs(DB_DIR, exist_ok=True)  # create folder if missing
-
-DB_PATH = os.path.join(DB_DIR, "users.db")
-
+DB_PATH = "login/users.db"
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
