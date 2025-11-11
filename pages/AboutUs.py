@@ -89,7 +89,7 @@ def load_about_us_page():
     }
 
     /* --------------------- CONTACT FORM --------------------- */
-    .contact-container {
+    div[data-testid="stForm"] {
         background-color: #FFFDF2;
         padding: 35px 40px;
         border-radius: 18px;
@@ -211,15 +211,16 @@ def load_about_us_page():
     # CONTACT FORM
     # -----------------------------------------------------------
     st.markdown("<h2 class='section-title'>📬 Contact Us</h2>", unsafe_allow_html=True)
-    st.markdown('<div class="contact-container">', unsafe_allow_html=True)
     with st.form("contact_form"):
         name = st.text_input("Your Name", placeholder="Enter your full name")
         email = st.text_input("Your Email", placeholder="Enter your email address")
         message = st.text_area("Your Message", placeholder="Type your message here...")
         submitted = st.form_submit_button("Send Message")
         if submitted:
-            st.markdown('<div class="contact-success">✅ Thank you for reaching out! Our team will get back to you soon.</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="contact-success">✅ Thank you for reaching out! Our team will get back to you soon.</div>',
+                unsafe_allow_html=True
+            )
 
     st.divider()
 

@@ -4,121 +4,97 @@ from datetime import datetime, timedelta
 from components.NavBar.navbar import navbar
 import requests
 
-# Display navbar
-navbar()
-
 # Page configuration
 st.set_page_config(page_title="News & Articles", layout="wide")
 
-# Custom CSS for styling the news page
-st.markdown("""
-    <style>
-    .article-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-    }
-    
-    .article-title {
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-    
-    .article-date {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 12px;
-        margin-bottom: 8px;
-    }
-    
-    .article-description {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 14px;
-        line-height: 1.6;
-        margin-bottom: 10px;
-    }
-    
-    .article-category {
-        display: inline-block;
-        background-color: rgba(255, 255, 255, 0.2);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        margin-right: 8px;
-    }
-    
-    .featured-article {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        padding: 30px;
-        border-radius: 15px;
-        margin-bottom: 30px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
-    
-    .featured-title {
-        color: white;
-        font-size: 28px;
-        font-weight: bold;
-        margin-bottom: 15px;
-    }
-    
-    .featured-description {
-        color: rgba(255, 255, 255, 0.95);
-        font-size: 16px;
-        line-height: 1.8;
-        margin-bottom: 15px;
-    }
-    
-    .read-more-btn {
-        background-color: white;
-        color: #f5576c;
-        padding: 10px 20px;
-        border-radius: 25px;
-        font-weight: bold;
-        text-decoration: none;
-        display: inline-block;
-        margin-top: 10px;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# Display navbar
+navbar()
 
 def load_articles_page():
     """Load and display the articles page"""
-    
+
     # Page title
     st.title("📰 Real Estate News & Articles")
     st.markdown("Stay updated with the latest trends, insights, and news in the real estate industry.")
-    
+
+    # --- CSS Styling ---
+    st.markdown("""
+        <style>
+        .article-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+        .article-title {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .article-date {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .article-description {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .article-category {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        .featured-article {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        .featured-title {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .featured-description {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     # Sidebar filters
     st.sidebar.header("🔍 Filter News")
-    
-    # Category filter
     categories = ["All", "Market Trends", "Investment Tips", "Industry News", "Property Updates", "Technology", "Regulations"]
-    selected_category = st.sidebar.selectbox("Category", categories)
-    
-    # Date range filter
+    selected_category = st.sidebar.selectbox("Category", categories, key="articles_category_filter")
+
     date_range = st.sidebar.slider(
         "Articles from last (days)",
-        min_value=1,
-        max_value=90,
-        value=30,
-        step=1
+        min_value=1, max_value=90, value=30, step=1, key="articles_date_range"
     )
-    
-    # Search functionality
-    search_query = st.sidebar.text_input("🔎 Search articles...", placeholder="Enter keywords...")
-    
-    # Sample articles data - In production, this would come from a database
+
+    search_query = st.sidebar.text_input(
+        "🔎 Search articles...", placeholder="Enter keywords...", key="articles_search_box"
+    )
+
+    # --- Sample Articles Data ---
     articles_data = [
         {
             "id": 1,
@@ -149,7 +125,7 @@ def load_articles_page():
             "category": "Investment Tips",
             "date": datetime.now() - timedelta(days=7),
             "author": "Emily Rodriguez",
-            "image_url": "https://images.unsplash.com/photo-1554224311-beee415c15ac?w=500",
+            "image_url": "https://brokeragebd.com/wp-content/uploads/2024/11/real-estate-investment-strategies-for-first-time-buyers-726256.webp",
             "content": "First-time real estate investors often struggle with where to start...",
             "featured": False
         },
@@ -182,31 +158,25 @@ def load_articles_page():
             "category": "Market Trends",
             "date": datetime.now() - timedelta(days=20),
             "author": "Robert Williams",
-            "image_url": "https://images.unsplash.com/photo-1479839672679-a46482f0b7d8?w=500",
+            "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEEMhI41nsr5MrZEhhu3MaJwmo09Ta4dYGYA&s",
             "content": "The commercial real estate sector continues to evolve...",
             "featured": False
         }
     ]
-    
-    # Filter articles
+
+    # --- Filters ---
     filtered_articles = articles_data
-    
-    # Apply category filter
     if selected_category != "All":
         filtered_articles = [a for a in filtered_articles if a["category"] == selected_category]
-    
-    # Apply date range filter
+
     cutoff_date = datetime.now() - timedelta(days=date_range)
     filtered_articles = [a for a in filtered_articles if a["date"] >= cutoff_date]
-    
-    # Apply search filter
+
     if search_query:
-        search_query_lower = search_query.lower()
-        filtered_articles = [a for a in filtered_articles 
-                           if search_query_lower in a["title"].lower() 
-                           or search_query_lower in a["description"].lower()]
-    
-    # Display featured article
+        q = search_query.lower()
+        filtered_articles = [a for a in filtered_articles if q in a["title"].lower() or q in a["description"].lower()]
+
+    # --- Featured Article ---
     featured_articles = [a for a in filtered_articles if a["featured"]]
     if featured_articles:
         featured = featured_articles[0]
@@ -220,8 +190,8 @@ def load_articles_page():
                 <div class="article-category">{featured['category']}</div>
             </div>
         """, unsafe_allow_html=True)
-    
-    # Display statistics
+
+    # --- Stats ---
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Total Articles", len(articles_data))
@@ -229,82 +199,83 @@ def load_articles_page():
         st.metric("Categories", len(categories) - 1)
     with col3:
         st.metric("Updated", "Today")
-    
-    # Display articles grid
-    st.subheader(f"📚 Articles ({len(filtered_articles)} results)")
-    
-    if filtered_articles:
-        # Create a grid layout
-        cols_per_row = 2
-        for i in range(0, len(filtered_articles), cols_per_row):
-            cols = st.columns(cols_per_row)
-            for j, col in enumerate(cols):
-                if i + j < len(filtered_articles):
-                    article = filtered_articles[i + j]
-                    with col:
-                        st.markdown(f"""
-                            <div class="article-card">
-                                <div class="article-title">{article['title']}</div>
-                                <div class="article-date">{article['date'].strftime('%B %d, %Y')} | By {article['author']}</div>
-                                <div class="article-description">{article['description']}</div>
-                                <div class="article-category">{article['category']}</div>
-                            </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # Add read more button
-                        if st.button("Read More →", key=f"read_{article['id']}"):
-                            st.session_state[f"article_{article['id']}"] = True
-                            st.rerun()
-    else:
-        st.info("📭 No articles found matching your filters. Try adjusting your search criteria.")
-    
-    # Display detailed article view if selected
+
+    # --- ARTICLE VIEW HANDLER ---
+    open_article_id = None
     for article in articles_data:
         if st.session_state.get(f"article_{article['id']}", False):
-            st.markdown("---")
-            st.subheader(article['title'])
-            
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.write(f"**Author:** {article['author']}")
-                st.write(f"**Published:** {article['date'].strftime('%B %d, %Y')}")
-                st.write(f"**Category:** {article['category']}")
-            
-            with col2:
-                st.image(article['image_url'], use_column_width=True)
-            
-            st.markdown("---")
-            st.write(article['content'])
-            
-            # Add action buttons
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button("👍 Like", key=f"like_{article['id']}"):
-                    st.success("You liked this article!")
-            with col2:
-                if st.button("💬 Comment", key=f"comment_{article['id']}"):
-                    st.info("Comments feature coming soon!")
-            with col3:
-                if st.button("🔗 Share", key=f"share_{article['id']}"):
-                    st.info("Share functionality coming soon!")
-            
-            if st.button("← Back to Articles"):
-                st.session_state[f"article_{article['id']}"] = False
-                st.rerun()
-    
-    # Newsletter subscription section
+            open_article_id = article["id"]
+            break
+
+    if open_article_id:
+        # Show selected article
+        article = next(a for a in articles_data if a["id"] == open_article_id)
+        st.markdown("---")
+        st.subheader(article['title'])
+
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.write(f"**Author:** {article['author']}")
+            st.write(f"**Published:** {article['date'].strftime('%B %d, %Y')}")
+            st.write(f"**Category:** {article['category']}")
+        with col2:
+            st.image(article['image_url'], use_container_width=True)
+
+        st.markdown("---")
+        st.write(article['content'])
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("👍 Like", key=f"like_{article['id']}"):
+                st.success("You liked this article!")
+        with col2:
+            if st.button("💬 Comment", key=f"comment_{article['id']}"):
+                st.info("Comments feature coming soon!")
+        with col3:
+            if st.button("🔗 Share", key=f"share_{article['id']}"):
+                st.info("Share functionality coming soon!")
+
+        if st.button("← Back to Articles", key=f"back_{article['id']}"):
+            st.session_state[f"article_{article['id']}"] = False
+            st.rerun()
+
+    else:
+        # --- Articles Grid ---
+        st.subheader(f"📚 Articles ({len(filtered_articles)} results)")
+        if filtered_articles:
+            cols_per_row = 2
+            for i in range(0, len(filtered_articles), cols_per_row):
+                cols = st.columns(cols_per_row)
+                for j, col in enumerate(cols):
+                    if i + j < len(filtered_articles):
+                        article = filtered_articles[i + j]
+                        with col:
+                            st.markdown(f"""
+                                <div class="article-card">
+                                    <div class="article-title">{article['title']}</div>
+                                    <div class="article-date">{article['date'].strftime('%B %d, %Y')} | By {article['author']}</div>
+                                    <div class="article-description">{article['description']}</div>
+                                    <div class="article-category">{article['category']}</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                            if st.button("Read More →", key=f"read_{article['id']}"):
+                                st.session_state[f"article_{article['id']}"] = True
+                                st.rerun()
+        else:
+            st.info("📭 No articles found matching your filters. Try adjusting your search criteria.")
+
+    # --- Newsletter ---
     st.markdown("---")
     st.subheader("📧 Subscribe to Our Newsletter")
     col1, col2 = st.columns([3, 1])
     with col1:
-        email = st.text_input("Enter your email to get weekly real estate news")
+        email = st.text_input("Enter your email to get weekly real estate news", key="newsletter_email")
     with col2:
-        if st.button("Subscribe"):
+        if st.button("Subscribe", key="newsletter_subscribe"):
             if email:
                 st.success(f"✅ Subscribed! You'll receive updates at {email}")
             else:
                 st.error("Please enter a valid email address")
 
-# Main execution
-load_articles_page()
 
