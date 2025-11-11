@@ -125,7 +125,7 @@ def load_articles_page():
             "category": "Investment Tips",
             "date": datetime.now() - timedelta(days=7),
             "author": "Emily Rodriguez",
-            "image_url": "https://images.unsplash.com/photo-1554224311-beee415c15ac?w=500",
+            "image_url": "https://brokeragebd.com/wp-content/uploads/2024/11/real-estate-investment-strategies-for-first-time-buyers-726256.webp",
             "content": "First-time real estate investors often struggle with where to start...",
             "featured": False
         },
@@ -158,7 +158,7 @@ def load_articles_page():
             "category": "Market Trends",
             "date": datetime.now() - timedelta(days=20),
             "author": "Robert Williams",
-            "image_url": "https://images.unsplash.com/photo-1479839672679-a46482f0b7d8?w=500",
+            "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEEMhI41nsr5MrZEhhu3MaJwmo09Ta4dYGYA&s",
             "content": "The commercial real estate sector continues to evolve...",
             "featured": False
         }
