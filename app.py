@@ -69,8 +69,8 @@ try:
         case_studies.load_case_studies_page()
 
     elif page == "news":
-        import pages.news as news
-        news.load_articles_page()
+        from pages.news import load_articles_page
+        load_articles_page()
 
     elif page == "AboutUs":
         import pages.AboutUs as about_us
