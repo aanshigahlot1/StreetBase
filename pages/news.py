@@ -1,14 +1,213 @@
-import streamlit as st
+import streamlit as st# pyright: ignore[reportMissingImports] 
 import pandas as pd
 from datetime import datetime, timedelta
-from components.NavBar.navbar import navbar
+from components.NavBar.navbar import navbar# pyright: ignore[reportMissingImports] 
 import requests
+import re 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+import joblib
+import os
 
 # Page configuration
 st.set_page_config(page_title="News & Articles", layout="wide")
 
 # Display navbar
 navbar()
+
+# --- Configuration ---
+API_KEY = "d4d290fde3d8464b8d689e5726ebfd45" 
+BASE_URL = "https://newsapi.org/v2/everything"
+DEFAULT_QUERY = "real estate india"
+MODEL_PATH = "news_classifier_model.joblib"
+
+# Define the set of all possible categories
+ALL_CATEGORIES = [
+    "Apartments", 
+    "Villas", 
+    "Market Trends", 
+    "Investment Tips", 
+    "Regulations",
+    "Industry News" # Default/Catch-all
+]
+
+# --- ML Model Setup (Mock Training) ---
+# In a real application, this would be pre-trained on a large dataset.
+# Here, we mock a simple training process for demonstration.
+def train_and_save_model():
+    """Trains a simple Naive Bayes classifier and saves it."""
+    
+    # Simplified training data
+    X_train = [
+        "New high-rise apartment project launched in Mumbai", "flat for sale in Delhi", "condo prices rising",
+        "Luxury villa sales hit record high in Goa", "independent house for rent", "mansion tax implications",
+        "Indian real estate market poised for growth", "economic forecast for housing sector", "property price trend",
+        "Top investment tips for first-time homebuyers", "maximizing ROI on rental property", "equity investment strategy",
+        "RERA regulation changes announced", "new tax policy for property transactions", "land law updates",
+        "General news about the real estate industry", "developer announces new project", "construction update"
+    ]
+    y_train = [
+        "Apartments", "Apartments", "Apartments",
+        "Villas", "Villas", "Villas",
+        "Market Trends", "Market Trends", "Market Trends",
+        "Investment Tips", "Investment Tips", "Investment Tips",
+        "Regulations", "Regulations", "Regulations",
+        "Industry News", "Industry News", "Industry News"
+    ]
+    
+    # Create a pipeline: TF-IDF Vectorizer -> Multinomial Naive Bayes Classifier
+    model = make_pipeline(TfidfVectorizer(), MultinomialNB())
+    model.fit(X_train, y_train)
+    
+    # Save the model
+    joblib.dump(model, MODEL_PATH)
+    return model
+
+# Load or train the model
+if os.path.exists(MODEL_PATH):
+    try:
+        classifier = joblib.load(MODEL_PATH)
+    except Exception:
+        # Fallback to training if loading fails
+        classifier = train_and_save_model()
+else:
+    classifier = train_and_save_model()
+
+def ml_categorize_article(article_text):
+    """Uses the trained ML model to predict the primary category."""
+    
+    # Predict the category
+    predicted_category = classifier.predict([article_text])[0]
+    
+    # For a more robust display, we can return the predicted category and a few others
+    # For simplicity, we'll just return the single best prediction as a list
+    return [predicted_category]
+
+# --- Data Fetching ---
+def get_news_data(query: str, page_size: int = 50):
+    """Fetches news articles from NewsAPI."""
+    params = {
+        "q": query,
+        "language": "en",
+        "sortBy": "publishedAt",
+        "apiKey": API_KEY,
+        "pageSize": page_size
+    }
+    
+    articles_data = []
+    try:
+        response = requests.get(BASE_URL, params=params, timeout=10)
+        response.raise_for_status()
+        news = response.json().get("articles", [])
+        for i, item in enumerate(news):
+            content_for_categorization = f"{item.get('title', '')} {item.get('description', '')}"
+            
+            articles_data.append({
+                "id": i + 1,
+                "title": item.get("title", "No Title"),
+                "description": item.get("description", "No Description Available"),
+                "date": datetime.strptime(item.get("publishedAt", datetime.now().isoformat())[:10], "%Y-%m-%d"),
+                "author": item.get("author", "Unknown"),
+                "image_url": item.get("urlToImage") or "https://via.placeholder.com/500x300.png?text=Real+Estate+News",
+                "url": item.get("url", "#"),
+                "content_text": content_for_categorization,
+                "source": item.get("source", {}).get("name", "Unknown Source"),
+                "popularity_score": i + 1 
+            })
+    except Exception as e:
+        st.error(f"⚠️ Failed to fetch real-time articles: {e}. Showing demo content instead.")
+        # Fallback to demo content
+        articles_data = [
+            {"id": 1, "title": "Indian Real Estate Market Poised for Growth", "description": "Experts predict a surge in real estate demand.", "date": datetime.now() - timedelta(days=3), "author": "The Realty Journal", "url": "#", "content_text": "market trend growth", "source": "Journal", "popularity_score": 1},
+            {"id": 2, "title": "Luxury Villa Sales Hit Record High", "description": "High-net-worth individuals are investing in villas.", "date": datetime.now() - timedelta(days=7), "author": "Housing Today", "url": "#", "content_text": "villa luxury home investment", "source": "Housing", "popularity_score": 2},
+            {"id": 3, "title": "New Apartment Project Launched in Mumbai", "description": "Affordable flats are now available for booking.", "date": datetime.now() - timedelta(days=1), "author": "Mumbai News", "url": "#", "content_text": "apartment flat mumbai", "source": "Mumbai News", "popularity_score": 3},
+        ]
+        
+    return articles_data
+
+def categorize_articles(articles):
+    """Assigns articles to categories using the ML model and popularity."""
+    
+    # 1. Initialize categories
+    categorized_news = {
+        "Trending": [],
+        "Most Read": [], 
+    }
+    
+    # Initialize all other categories
+    for cat in ALL_CATEGORIES:
+        categorized_news[cat] = []
+    
+    # 2. Assign articles to ML-based categories
+    for article in articles:
+        # Use the ML model for primary categorization
+        ml_categories = ml_categorize_article(article["content_text"])
+        
+        # The ML model returns a list of categories (even if it's just one)
+        article["categories"] = ml_categories
+        
+        # 3. Populate Trending and Most Read (using popularity_score as a proxy)
+        # Trending: Top 10 most recent/popular
+        if article["popularity_score"] <= 10:
+            categorized_news["Trending"].append(article)
+            
+        # Most Read: Top 5 most recent/popular 
+        if article["popularity_score"] <= 5:
+            categorized_news["Most Read"].append(article)
+            
+        # 4. Populate ML-based categories
+        for cat in ml_categories:
+            if cat in categorized_news:
+                categorized_news[cat].append(article)
+            else:
+                # Handle dynamic categories if the ML model were more complex
+                # For this mock, we stick to ALL_CATEGORIES
+                if cat not in categorized_news:
+                    categorized_news[cat] = []
+                categorized_news[cat].append(article)
+
+    # Remove duplicates within each category (based on article ID)
+    for category in categorized_news:
+        unique_articles = {a['id']: a for a in categorized_news[category]}.values()
+        categorized_news[category] = list(unique_articles)
+        
+    # Remove empty categories
+    categorized_news = {k: v for k, v in categorized_news.items() if v}
+        
+    return categorized_news
+
+def render_article_card(article, is_featured=False):
+    """Renders a single article card using HTML/Markdown."""
+    
+    # Determine CSS class for styling
+    card_class = "featured-article" if is_featured else "article-card"
+    title_class = "featured-title" if is_featured else "article-title"
+    desc_class = "featured-description" if is_featured else "article-description"
+    
+    # Generate category tags
+    category_tags = "".join([f'<span class="article-category">{cat}</span>' for cat in article.get("categories", ["News"])])
+    
+    return f"""
+        <div class="{card_class}">
+            <div class="{title_class}"><a href="{article['url']}" target="_blank">{article['title']}</a></div>
+            <div class="{desc_class}">{article['description']}</div>
+            <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 10px;">
+                By <strong>{article['author']}</strong> | {article['date'].strftime('%B %d, %Y')}
+            </div>
+            <div>{category_tags}</div>
+            <a href="{article['url']}" target="_blank" style="
+                display:inline-block;
+                margin-top:10px;
+                padding:8px 15px;
+                background-color:white;
+                color:#f5576c;
+                font-weight:600;
+                text-decoration:none;
+                border-radius:6px;
+            ">Read Full Article →</a>
+        </div>
+    """
 
 def load_articles_page():
     """Load and display the articles page"""
@@ -38,6 +237,13 @@ def load_articles_page():
             font-weight: bold;
             margin-bottom: 10px;
         }
+        .article-title a {
+            color: white;
+            text-decoration: none;
+        }
+        .article-title a:hover {
+            text-decoration: underline;
+        }
         .article-date {
             color: rgba(255, 255, 255, 0.7);
             font-size: 12px;
@@ -57,6 +263,7 @@ def load_articles_page():
             border-radius: 20px;
             font-size: 12px;
             margin-right: 8px;
+            margin-top: 5px;
         }
         .featured-article {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -80,193 +287,57 @@ def load_articles_page():
         </style>
     """, unsafe_allow_html=True)
 
-    # Sidebar filters
-    st.sidebar.header("🔍 Filter News")
-    categories = ["All", "Market Trends", "Investment Tips", "Industry News", "Property Updates", "Technology", "Regulations"]
-    selected_category = st.sidebar.selectbox("Category", categories, key="articles_category_filter")
-
-    date_range = st.sidebar.slider(
-        "Articles from last (days)",
-        min_value=1, max_value=90, value=30, step=1, key="articles_date_range"
+    # --- Search Bar (Prominent placement) ---
+    search_query = st.text_input(
+        "Search all news articles...", 
+        placeholder="e.g., 'new apartment regulations' or 'villa investment'", 
+        key="main_search_box"
     )
-
-    search_query = st.sidebar.text_input(
-        "🔎 Search articles...", placeholder="Enter keywords...", key="articles_search_box"
-    )
-
-    # --- Sample Articles Data ---
-    articles_data = [
-        {
-            "id": 1,
-            "title": "The Rise of Smart Homes: Revolutionizing Real Estate",
-            "description": "Discover how IoT and AI technologies are transforming residential properties and increasing their market value.",
-            "category": "Technology",
-            "date": datetime.now() - timedelta(days=2),
-            "author": "Sarah Johnson",
-            "image_url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-            "content": "Smart home technology has become a game-changer in the real estate industry...",
-            "featured": True
-        },
-        {
-            "id": 2,
-            "title": "2025 Real Estate Market Predictions",
-            "description": "Experts forecast significant changes in property prices, interest rates, and market dynamics for the upcoming year.",
-            "category": "Market Trends",
-            "date": datetime.now() - timedelta(days=5),
-            "author": "Michael Chen",
-            "image_url": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500",
-            "content": "The real estate market is expected to shift dramatically in 2025...",
-            "featured": False
-        },
-        {
-            "id": 3,
-            "title": "Investment Strategies for First-Time Buyers",
-            "description": "Learn essential tips and strategies for making your first real estate investment wisely and profitably.",
-            "category": "Investment Tips",
-            "date": datetime.now() - timedelta(days=7),
-            "author": "Emily Rodriguez",
-            "image_url": "https://brokeragebd.com/wp-content/uploads/2024/11/real-estate-investment-strategies-for-first-time-buyers-726256.webp",
-            "content": "First-time real estate investors often struggle with where to start...",
-            "featured": False
-        },
-        {
-            "id": 4,
-            "title": "New Regulations Impact Property Ownership",
-            "description": "Government announces new policies that could affect property taxes, ownership structures, and rental markets.",
-            "category": "Regulations",
-            "date": datetime.now() - timedelta(days=10),
-            "author": "David Smith",
-            "image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500",
-            "content": "Recent government announcements have introduced new regulations...",
-            "featured": False
-        },
-        {
-            "id": 5,
-            "title": "Sustainable Real Estate: Building the Future",
-            "description": "Explore eco-friendly building practices and their impact on property values and environmental sustainability.",
-            "category": "Industry News",
-            "date": datetime.now() - timedelta(days=15),
-            "author": "Jessica Lee",
-            "image_url": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500",
-            "content": "Sustainability in real estate is no longer optional...",
-            "featured": False
-        },
-        {
-            "id": 6,
-            "title": "Commercial Real Estate: Post-Pandemic Recovery",
-            "description": "Analyzing how commercial property markets are recovering and adapting to the new work environment.",
-            "category": "Market Trends",
-            "date": datetime.now() - timedelta(days=20),
-            "author": "Robert Williams",
-            "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEEMhI41nsr5MrZEhhu3MaJwmo09Ta4dYGYA&s",
-            "content": "The commercial real estate sector continues to evolve...",
-            "featured": False
-        }
-    ]
-
-    # --- Filters ---
-    filtered_articles = articles_data
-    if selected_category != "All":
-        filtered_articles = [a for a in filtered_articles if a["category"] == selected_category]
-
-    cutoff_date = datetime.now() - timedelta(days=date_range)
-    filtered_articles = [a for a in filtered_articles if a["date"] >= cutoff_date]
-
-    if search_query:
-        q = search_query.lower()
-        filtered_articles = [a for a in filtered_articles if q in a["title"].lower() or q in a["description"].lower()]
-
-    # --- Featured Article ---
-    featured_articles = [a for a in filtered_articles if a["featured"]]
-    if featured_articles:
-        featured = featured_articles[0]
-        st.markdown(f"""
-            <div class="featured-article">
-                <div class="featured-title">{featured['title']}</div>
-                <div class="featured-description">{featured['description']}</div>
-                <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 10px;">
-                    By <strong>{featured['author']}</strong> | {featured['date'].strftime('%B %d, %Y')}
-                </div>
-                <div class="article-category">{featured['category']}</div>
-            </div>
-        """, unsafe_allow_html=True)
-
-    # --- Stats ---
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Total Articles", len(articles_data))
-    with col2:
-        st.metric("Categories", len(categories) - 1)
-    with col3:
-        st.metric("Updated", "Today")
-
-    # --- ARTICLE VIEW HANDLER ---
-    open_article_id = None
-    for article in articles_data:
-        if st.session_state.get(f"article_{article['id']}", False):
-            open_article_id = article["id"]
-            break
-
-    if open_article_id:
-        # Show selected article
-        article = next(a for a in articles_data if a["id"] == open_article_id)
-        st.markdown("---")
-        st.subheader(article['title'])
-
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(f"**Author:** {article['author']}")
-            st.write(f"**Published:** {article['date'].strftime('%B %d, %Y')}")
-            st.write(f"**Category:** {article['category']}")
-        with col2:
-            st.image(article['image_url'], use_container_width=True)
-
-        st.markdown("---")
-        st.write(article['content'])
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("👍 Like", key=f"like_{article['id']}"):
-                st.success("You liked this article!")
-        with col2:
-            if st.button("💬 Comment", key=f"comment_{article['id']}"):
-                st.info("Comments feature coming soon!")
-        with col3:
-            if st.button("🔗 Share", key=f"share_{article['id']}"):
-                st.info("Share functionality coming soon!")
-
-        if st.button("← Back to Articles", key=f"back_{article['id']}"):
-            st.session_state[f"article_{article['id']}"] = False
-            st.rerun()
-
-    else:
-        # --- Articles Grid ---
-        st.subheader(f"📚 Articles ({len(filtered_articles)} results)")
-        if filtered_articles:
-            cols_per_row = 2
-            for i in range(0, len(filtered_articles), cols_per_row):
-                cols = st.columns(cols_per_row)
-                for j, col in enumerate(cols):
-                    if i + j < len(filtered_articles):
-                        article = filtered_articles[i + j]
-                        with col:
-                            st.markdown(f"""
-                                <div class="article-card">
-                                    <div class="article-title">{article['title']}</div>
-                                    <div class="article-date">{article['date'].strftime('%B %d, %Y')} | By {article['author']}</div>
-                                    <div class="article-description">{article['description']}</div>
-                                    <div class="article-category">{article['category']}</div>
-                                </div>
-                            """, unsafe_allow_html=True)
-
-                            if st.button("Read More →", key=f"read_{article['id']}"):
-                                st.session_state[f"article_{article['id']}"] = True
-                                st.rerun()
-        else:
-            st.info("📭 No articles found matching your filters. Try adjusting your search criteria.")
-
-    # --- Newsletter ---
     st.markdown("---")
+
+    # --- Fetch and Categorize Data ---
+    # Use the main search query if provided, otherwise use the default query
+    fetch_query = search_query if search_query else DEFAULT_QUERY
+    
+    # Fetch a larger set of articles to ensure good categorization
+    articles_data = get_news_data(query=fetch_query, page_size=50)
+    
+    # Categorize the fetched articles
+    categorized_news = categorize_articles(articles_data)
+    
+    # --- Display Categorized Sections ---
+    
+    # 1. Featured Article (The most recent/popular from the entire set)
+    if articles_data:
+        featured = articles_data[0]
+        st.subheader("🔥 Featured Article")
+        st.markdown(render_article_card(featured, is_featured=True), unsafe_allow_html=True)
+        st.markdown("---")
+
+    # 2. Display all categories
+    for category, articles in categorized_news.items():
+        if articles:
+            st.header(f"🗞️ {category} ({len(articles)})")
+            
+            # Use a Streamlit expander for cleaner layout
+            with st.expander(f"View {len(articles)} articles in {category}", expanded=category in ["Trending", "Most Read"]):
+                
+                # Display articles in a 2-column grid
+                cols_per_row = 2
+                for i in range(0, len(articles), cols_per_row):
+                    cols = st.columns(cols_per_row)
+                    for j, col in enumerate(cols):
+                        if i + j < len(articles):
+                            article = articles[i + j]
+                            with col:
+                                # Render the card, but not as featured inside the category section
+                                st.markdown(render_article_card(article, is_featured=False), unsafe_allow_html=True)
+            st.markdown("---")
+            
+    if not articles_data:
+        st.info("📭 No articles found. Please try a different search query.")
+
+    # --- Newsletter (Kept from original code) ---
     st.subheader("📧 Subscribe to Our Newsletter")
     col1, col2 = st.columns([3, 1])
     with col1:
@@ -278,4 +349,6 @@ def load_articles_page():
             else:
                 st.error("Please enter a valid email address")
 
-
+# Run the page function
+if __name__ == "__main__":
+    load_articles_page()
