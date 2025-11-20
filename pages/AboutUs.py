@@ -11,7 +11,8 @@ import qrcode
 import io
 import streamlit as st # <-- Move this line to the top
 
-
+from components.NavBar.navbar import navbar
+from backend.api.email_api import send_contact_email
 
 def load_about_us_page():
     
