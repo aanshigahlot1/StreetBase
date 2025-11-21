@@ -13,6 +13,7 @@ project_root = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, project_root)
 sys.path.append(os.path.join(project_root, "components"))
 sys.path.append(os.path.join(project_root, "pages"))
+sys.path.append(os.path.join(project_root, "backend")) 
 
 # ✅ Import navbar (only once)
 from components.NavBar.navbar import navbar
