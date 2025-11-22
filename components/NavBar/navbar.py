@@ -151,6 +151,8 @@ def navbar():
             <a href="?page=home">Home</a>
             <a href="?page=services">Services</a>
             <a href="?page=case_studies">Case Studies</a>
+            <a href="?page=favourites">Favourites</a>
+            <a href="?page=emi_calc">EMI_Calc</a>
             <a href="?page=news">News</a>
             <a href="?page=AboutUs">About Us</a>
             {auth_html}

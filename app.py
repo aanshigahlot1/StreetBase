@@ -87,6 +87,13 @@ try:
     elif page == "Signin":
         import pages.Signin as signin
         signin.load_signin_page()
+    elif page == "emi_calc":
+        import pages.emi_calc as emi
+        emi.render_emi_calculator()
+
+    elif page == "favourites":
+        import pages.favourites as fav
+        fav.render_favourites_page()
 
     else:
         st.error("404 - Page not found 😢")
