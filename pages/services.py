@@ -3,7 +3,7 @@ from streamlit_lottie import st_lottie
 import requests
 from components.NavBar.navbar import navbar
 import os
-
+from backend.api.request_quote_api import send_quote_email
 
 def load_services_page():
     
@@ -246,8 +246,13 @@ def load_services_page():
 
         if submitted:
             if name and email:
-                st.success(f"Thank you, {name}! Our team will reach out soon about {service_choice}.")
+                # --- THIS WAS MISSING: ACTUALLY CALLING THE BACKEND ---
+                result = send_quote_email(name, email, service_choice, message)
+                
+                if result["status"]:
+                    st.success(f"Thank you, {name}! Our team will reach out soon about {service_choice}.")
+                else:
+                    st.error(f"❌ Failed to send email: {result['error']}")
             else:
                 st.warning("Please fill out your name and email before submitting.")
-
         
