@@ -199,7 +199,4 @@ def render_favourites_page():
         st.markdown("</div>", unsafe_allow_html=True)
 
 
-# If this is in pages, just call render_favourites_page() at the bottom.
-# Example:
-if __name__ == "__main__":
-    render_favourites_page()
+

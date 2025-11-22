@@ -184,7 +184,4 @@ def render_emi_calculator():
         )
 
 
-# If this file is in `pages/`, Streamlit will auto-run it.
-# If you want to test it standalone, uncomment:
-if __name__ == "__main__":
-    render_emi_calculator()
+

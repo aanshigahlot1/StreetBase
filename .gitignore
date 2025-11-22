@@ -4,4 +4,6 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+__pycache__/
+*.pyc
 
