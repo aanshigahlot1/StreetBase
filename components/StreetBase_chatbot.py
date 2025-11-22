@@ -4,6 +4,8 @@ from sentence_transformers import SentenceTransformer, util
 from PyPDF2 import PdfReader
 import torch
 import re
+from dotenv import load_dotenv
+load_dotenv()
 
 # Disable parallelism warnings
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"   # 👈 add this line
