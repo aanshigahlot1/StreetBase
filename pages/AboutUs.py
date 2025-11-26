@@ -1,3 +1,5 @@
+# pages/AboutUs.py
+
 # ---------------- TOP IMPORT FIXES ----------------
 from pathlib import Path
 import streamlit.components.v1 as components
@@ -21,7 +23,8 @@ def load_about_us_page():
     st.set_page_config(page_title="StreetBase", layout="wide")
 
     # ---------------- CSS ----------------
-    st.markdown("""
+    st.markdown(
+        """
     <style>
     #MainMenu, header, footer {visibility: hidden;}
     body, .block-container {
@@ -266,7 +269,9 @@ def load_about_us_page():
         margin: 3rem 0;
     }
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # ---------------- NAVBAR ----------------
     navbar()
@@ -320,7 +325,7 @@ def load_about_us_page():
 
     st.divider()
 
-    # ---------------- WHAT WE DO / PROBLEM & SOLUTION ----------------
+    # ---------------- WHY STREETBASE ----------------
     st.markdown("<h2 class='section-title'>Why StreetBase?</h2>", unsafe_allow_html=True)
     st.markdown(
         "<p class='section-subtitle'>"
@@ -467,8 +472,7 @@ def load_about_us_page():
 
     st.divider()
 
-    # ---------------- CONTACT FORM (UNCHANGED) ----------------
-    # 🔽 Wrap the contact form in a div with a stable id
+    # ---------------- CONTACT FORM ----------------
     st.markdown("<div id='contact_section'></div>", unsafe_allow_html=True)
     st.markdown("<h2 class='section-title'>📬 Contact Us</h2>", unsafe_allow_html=True)
 
@@ -488,7 +492,7 @@ def load_about_us_page():
                 if result["status"]:
                     st.markdown(
                         '<div class="contact-success">✅ Thank you! We will reach out soon.</div>',
-                        unsafe_allow_html=True
+                        unsafe_allow_html=True,
                     )
                 else:
                     st.error(f"❌ Email failed: {result['error']}")
@@ -497,7 +501,6 @@ def load_about_us_page():
 
     # ---------------- CONNECT WITH US ----------------
     st.markdown("<h2 class='section-title'>🌐 Connect With Us</h2>", unsafe_allow_html=True)
-
     st.markdown(
         """
         <p class='section-subtitle'>
@@ -512,7 +515,9 @@ def load_about_us_page():
     with col_contact:
         st.write("📧 **Email:** streetbase5@gmail.com")
         st.write("🌍 **Website:** www.streetbase.ai")
-        st.write("📂 **Project Repo / Demo:** Scan the QR code to explore the codebase or live demo (if hosted).")
+        st.write(
+            "📂 **Project Repo / Demo:** Scan the QR code to explore the codebase or live demo (if hosted)."
+        )
 
     with col_qr:
         try:
@@ -533,19 +538,18 @@ def load_about_us_page():
         unsafe_allow_html=True,
     )
 
-   # ---- Auto-scroll if coming from Expert Review button ----
-if st.session_state.get("scroll_to_contact", False):
-    components.html(
-        """
-        <script>
-        const parentDoc = window.parent ? window.parent.document : document;
-        const target = parentDoc.getElementById("contact_section");
-        if (target) {
-            target.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-
-        </script>
-        """,
-        height=0,
-    )
-    st.session_state.scroll_to_contact = False
+    # ---- Auto-scroll if coming from Expert Review button ----
+    if st.session_state.get("scroll_to_contact", False):
+        components.html(
+            """
+            <script>
+            const parentDoc = window.parent ? window.parent.document : document;
+            const target = parentDoc.getElementById("contact_section");
+            if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+            </script>
+            """,
+            height=0,
+        )
+        st.session_state.scroll_to_contact = False
