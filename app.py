@@ -85,7 +85,7 @@ try:
         about_us.load_about_us_page()
 
     elif page == "Signin":
-        import pages.Signin as signin
+        import pages.Signin1 as signin
         signin.load_signin_page()
     elif page == "emi_calc":
         import pages.emi_calc as emi

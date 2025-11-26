@@ -2,6 +2,7 @@
 
 # ---------------- TOP IMPORT FIXES ----------------
 from pathlib import Path
+from components.chatbot_ui import chatbot_popup
 import streamlit.components.v1 as components
 import sys
 
@@ -527,16 +528,16 @@ def load_about_us_page():
             st.image(buf.getvalue(), width=130)
         except Exception:
             st.write("QR Code could not be generated")
+            
+    chatbot_popup()  # 👈 this will render the StreetBase chat section here
 
     # ---------------- FOOTER ----------------
-    st.markdown(
-        """
-        <div class="footer">
-            <b>StreetBase</b> © 2025 — Real Estate Intelligence for Smarter, Sustainable Cities
+    st.markdown("""
+        <div class='footer'>
+            © 2025 <b>StreetBase</b> | All Rights Reserved <br>
+            Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    """, unsafe_allow_html=True)
 
     # ---- Auto-scroll if coming from Expert Review button ----
     if st.session_state.get("scroll_to_contact", False):

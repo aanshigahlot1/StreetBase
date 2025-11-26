@@ -1,4 +1,5 @@
 # main_app.py  (replace your current main file with this)
+from components.chatbot_ui import chatbot_popup
 import streamlit as st  # pyright: ignore[reportMissingImports]
 import pandas as pd
 from datetime import datetime, timedelta, timezone
@@ -453,3 +454,14 @@ def load_articles_page():
 # Run the page function
 if __name__ == "__main__":
     load_articles_page()
+    
+    
+    
+    chatbot_popup()  # 👈 this will render the StreetBase chat section here
+        
+    st.markdown("""
+        <div class='footer'>
+            © 2025 <b>StreetBase</b> | All Rights Reserved <br>
+            Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
+        </div>
+    """, unsafe_allow_html=True)

@@ -1,3 +1,4 @@
+from components.chatbot_ui import chatbot_popup
 import streamlit as st
 from streamlit_lottie import st_lottie
 import requests
@@ -256,3 +257,10 @@ def load_services_page():
             else:
                 st.warning("Please fill out your name and email before submitting.")
         
+    chatbot_popup()  # 👈 this will render the StreetBase chat section here
+    st.markdown("""
+        <div class='footer'>
+            © 2025 <b>StreetBase</b> | All Rights Reserved <br>
+            Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
+        </div>
+    """, unsafe_allow_html=True)

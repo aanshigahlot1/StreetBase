@@ -1,13 +1,19 @@
+from components.chatbot_ui import chatbot_popup
 import streamlit as st
 from components.NavBar.navbar import navbar
 
+
 def load_case_studies_page():
     # ---------------- PAGE CONFIG ----------------
-    st.set_page_config(page_title="Case Studies | StreetBase AI", page_icon="🏙️", layout="wide")
+    st.set_page_config(
+        page_title="Case Studies | StreetBase AI",
+        page_icon="🏙️",
+        layout="wide",
+    )
 
     # ---------------- CUSTOM STYLES ----------------
-  
-    st.markdown("""
+    st.markdown(
+        """
         <style>
             body { background-color: #f9fafc; font-family: 'Poppins', sans-serif; }
 
@@ -119,102 +125,188 @@ def load_case_studies_page():
                 background-color: #004B8D !important;
             }
         </style>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
-
-    navbar()  # show navbar
+    # ---------------- NAVBAR ----------------
+    navbar()
 
     # ---------------- HEADER ----------------
     st.markdown("<div class='title'>🏗️ Case Studies</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Real-world AI Transformations in India's Real Estate Market</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='subtitle'>Real-world AI Transformations in India's Real Estate Market</div>",
+        unsafe_allow_html=True,
+    )
 
     # ---------------- SESSION STATE ----------------
     if "selected_case" not in st.session_state:
         st.session_state.selected_case = None
 
+    selected_case = st.session_state.selected_case
+
     # ---------------- CASE STUDY GRID ----------------
-    if not st.session_state.selected_case:
-        st.markdown("""
+    if selected_case is None:
+        st.markdown(
+            """
         <div style='text-align: center; font-size: 1.3rem; font-weight: 500; color: #333; margin-bottom: 1.5em;'>
         🌍 Explore how AI is reshaping the Indian property landscape
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         col1, col2, col3 = st.columns(3)
-        
+
         with col1:
-            if st.button("🏢 Mumbai — AI-Driven Apartment Valuation"):
+            st.image(
+                "https://images.unsplash.com/photo-1582407947304-fd86f028f716?auto=format&fit=crop&w=800&q=80"
+            )
+            st.caption(
+                "AI models bring price accuracy and speed to Mumbai’s complex housing market."
+            )
+            if st.button(
+                "🏢 Mumbai — AI-Driven Apartment Valuation", key="case_btn_mumbai"
+            ):
                 st.session_state.selected_case = "mumbai"
                 st.rerun()
-            st.image("https://images.unsplash.com/photo-1582407947304-fd86f028f716?auto=format&fit=crop&w=800&q=80")
-            st.caption("AI models bring price accuracy and speed to Mumbai’s complex housing market.")
 
         with col2:
-            if st.button("📊 Bengaluru — Predictive Market Insights"):
+            st.image(
+                "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80"
+            )
+            st.caption(
+                "Forecasting property trends and demand with deep learning time-series models."
+            )
+            if st.button(
+                "📊 Bengaluru — Predictive Market Insights",
+                key="case_btn_bengaluru",
+            ):
                 st.session_state.selected_case = "bengaluru"
                 st.rerun()
-            st.image("https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80")
-            st.caption("Forecasting property trends and demand with deep learning time-series models.")
 
         with col3:
-            if st.button("🏙️ Delhi NCR — Smart Property Comparison"):
+            st.image(
+                "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80"
+            )
+            st.caption(
+                "AI-powered ranking engine for better investment decisions and faster deals."
+            )
+            if st.button(
+                "🏙️ Delhi NCR — Smart Property Comparison",
+                key="case_btn_delhi",
+            ):
                 st.session_state.selected_case = "delhi"
                 st.rerun()
-            st.image("https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80")
-            st.caption("AI-powered ranking engine for better investment decisions and faster deals.")
 
-    else:
     # ---------------- DETAILED VIEWS ----------------
-        if st.session_state.selected_case == "mumbai":
-            st.markdown("""
+    else:
+        if selected_case == "mumbai":
+            st.markdown(
+                """
             <div class='detail-box'>
                 <h2 style='margin-top:0;'>🏢 AI-Driven Apartment Valuation — Mumbai, India</h2>
                 <p>Mumbai's real estate market is fast, fragmented, and highly price-sensitive.<br>
                 SmartBricks’ <b>AI-powered valuation system</b> automated what used to take <b>weeks</b> into seconds — ensuring fair, data-backed pricing.</p>
             </div>
-            """, unsafe_allow_html=True)
-            st.markdown("<div class='metric'>📊 10,000+ apartments analyzed using Random Forest & XGBoost</div>", unsafe_allow_html=True)
-            st.markdown("<div class='metric'>⚙️ Achieved R² = 0.94 | MAE = ₹3.1 lakhs</div>", unsafe_allow_html=True)
-            st.markdown("<div class='impact'>💡 Reduced manual appraisal time by 90%</div>", unsafe_allow_html=True)
-            st.markdown("<div class='impact'>🏦 Adopted by 5 major property lenders for loan risk assessment</div>", unsafe_allow_html=True)
-            st.markdown("<div class='impact'>📈 Helped standardize price variance across suburbs</div>", unsafe_allow_html=True)
-        
-        elif st.session_state.selected_case == "bengaluru":
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='metric'>📊 10,000+ apartments analyzed using Random Forest & XGBoost</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='metric'>⚙️ Achieved R² = 0.94 | MAE = ₹3.1 lakhs</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='impact'>💡 Reduced manual appraisal time by 90%</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='impact'>🏦 Adopted by 5 major property lenders for loan risk assessment</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='impact'>📈 Helped standardize price variance across suburbs</div>",
+                unsafe_allow_html=True,
+            )
+
+        elif selected_case == "bengaluru":
+            st.markdown(
+                """
             <div class='detail-box'>
                 <h2 style='margin-top:0;'>📊 Predictive Market Insights — Bengaluru, India</h2>
                 <p>Bengaluru’s housing demand mirrors its booming tech industry.<br>
                 Using <b>LSTM-based time series models</b>, StreetBase delivers live forecasts of housing prices and investment growth corridors.</p>
             </div>
-            """, unsafe_allow_html=True)
-            st.markdown("<div class='metric'>🧠 LSTM + Prophet ensemble model for 7 years of transaction data</div>", unsafe_allow_html=True)
-            st.markdown("<div class='metric'>🔍 Incorporated IT job data, metro expansions, and infra growth</div>", unsafe_allow_html=True)
-            st.markdown("<div class='impact'>🚀 93% forecast accuracy — helping developers plan smarter</div>", unsafe_allow_html=True)
-            st.markdown("<div class='impact'>💬 Realtors close deals 25% faster using AI-driven dashboards</div>", unsafe_allow_html=True)
-        
-        elif st.session_state.selected_case == "delhi":
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='metric'>🧠 LSTM + Prophet ensemble model for 7 years of transaction data</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='metric'>🔍 Incorporated IT job data, metro expansions, and infra growth</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='impact'>🚀 93% forecast accuracy — helping developers plan smarter</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='impact'>💬 Realtors close deals 25% faster using AI-driven dashboards</div>",
+                unsafe_allow_html=True,
+            )
+
+        elif selected_case == "delhi":
+            st.markdown(
+                """
             <div class='detail-box'>
                 <h2 style='margin-top:0;'>🏙️ Smart Property Comparison Tool — Delhi NCR, India</h2>
                 <p>Delhi NCR buyers face overwhelming property choices.<br>
                 SmartBricks’ <b>AI recommendation engine</b> ranks properties based on ROI, amenities, and proximity — saving users hours of research.</p>
             </div>
-            """, unsafe_allow_html=True)
-            st.markdown("<div class='metric'>⚖️ Ranking model powered by cosine similarity and weighted ROI</div>", unsafe_allow_html=True)
-            st.markdown("<div class='metric'>📉 Reduced search and decision time by 60%</div>", unsafe_allow_html=True)
-            st.markdown("<div class='impact'>🏘️ Integrated by 4+ real estate startups</div>", unsafe_allow_html=True)
-            st.markdown("<div class='impact'>🧩 Increased client conversion by 35% through better matching</div>", unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='metric'>⚖️ Ranking model powered by cosine similarity and weighted ROI</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='metric'>📉 Reduced search and decision time by 60%</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='impact'>🏘️ Integrated by 4+ real estate startups</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                "<div class='impact'>🧩 Increased client conversion by 35% through better matching</div>",
+                unsafe_allow_html=True,
+            )
 
+        # Back button
         st.markdown("<div class='btn-back'>", unsafe_allow_html=True)
-        if st.button("⬅️ Back to All Case Studies"):
+        if st.button("⬅️ Back to All Case Studies", key="case_btn_back"):
             st.session_state.selected_case = None
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
+    # ---------------- CHATBOT ----------------
+    chatbot_popup()  # render the StreetBase chat
 
     # ---------------- FOOTER ----------------
     st.markdown("---")
     st.markdown(
-        "<p style='text-align:center; color:#666;'>© 2025 StreetBase | Empowering Indian Real Estate with AI-Driven Insights</p>",
-        unsafe_allow_html=True
+        """
+        <div class='footer'>
+            © 2025 <b>StreetBase</b> | All Rights Reserved <br>
+            Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
+        </div>
+    """,
+        unsafe_allow_html=True,
     )
