@@ -60,6 +60,10 @@ def save_token(token):
 def load_token():
     return st.session_state.get("saved_token", None)
 
+def get_token():
+    return st.session_state.get("saved_token", None)
+
+
 def add_user_to_db(uid, email):
     try:
         db.child("users").child(uid).set({

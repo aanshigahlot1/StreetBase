@@ -5,6 +5,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 import streamlit as st
+# st.set_option('server.runOnSave', True)
 
 import sys
 
@@ -85,7 +86,7 @@ try:
         about_us.load_about_us_page()
 
     elif page == "Signin":
-        import pages.Signin1 as signin
+        import pages.Signin as signin
         signin.load_signin_page()
     elif page == "emi_calc":
         import pages.emi_calc as emi
