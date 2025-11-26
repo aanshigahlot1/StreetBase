@@ -2,6 +2,10 @@
 import os
 import sys
 import streamlit as st
+from test import render_testimonials
+st.set_page_config(page_title="...", layout="wide")
+
+
 
 # --- Add root path for imports ---
 ROOT = os.path.dirname(os.path.dirname(__file__))  # Go up to project root
@@ -71,10 +75,18 @@ st.markdown("<p style='text-align:center; color:#444;'>Try our AI-powered valuat
 
 load_valuation_section()  # ✅ NEW SECTION CALL
 
+
 st.markdown("</section>", unsafe_allow_html=True)
 
-# ---------------- FOOTER ----------------
-st.markdown("<br><br>", unsafe_allow_html=True)
+# # ---------------- FOOTER ----------------
+# st.markdown("<br><br>", unsafe_allow_html=True)
 
 # ---------------- FEATURES SECTION ----------------
 load_feature_section()
+# render_testimonials()
+
+# ---------------- TESTIMONIAL SLIDER ----------------
+
+st.markdown("<br><br>", unsafe_allow_html=True)
+
+

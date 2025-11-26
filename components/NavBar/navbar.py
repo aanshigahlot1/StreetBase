@@ -2,22 +2,22 @@ import streamlit as st
 import base64
 import os
 
-def _embed_logo_base64(logo_path):
+def _embed_logo_base64(logo_path: str) -> str:
     """Convert logo to Base64 for inline embedding"""
     if not os.path.exists(logo_path):
         return ""
     with open(logo_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
+
 def navbar():
     logo_path = os.path.join(os.path.dirname(__file__), "logo3.png")
     logo_b64 = _embed_logo_base64(logo_path)
 
-    logo_html = (
-        f"<img src='data:image/png;base64,{logo_b64}' class='logo' />"
-        if logo_b64
-        else "<div style='width:60px;height:60px;background:#fff;'></div>"
-    )
+    if logo_b64:
+        logo_html = f"<img src='data:image/png;base64,{logo_b64}' class='logo' />"
+    else:
+        logo_html = "<div style='width:60px;height:60px;background:#fff;'></div>"
 
     # ---------- AUTH / LOGIN BUTTON ----------
     if st.session_state.get("logged_in", False):
@@ -26,13 +26,12 @@ def navbar():
         <div class='profile-wrap' id='profileWrap'>
             <button class='profile-btn' id='profileBtn'>👤 {username}</button>
             <div class='dropdown-content' id='dropdownMenu'>
-                <a href='?page=Signin&logout=true' id='logoutBtn'>Sign Out</a>
+                <a href='?page=Signin&logout=true' id='logoutBtn' target='_self'>Sign Out</a>
             </div>
         </div>
         """.strip()
-
     else:
-        auth_html = '<a href="?page=Signin" class="login-btn">Login / Sign Up</a>'
+        auth_html = "<a href='?page=Signin' class='login-btn' target='_self'>Login / Sign Up</a>"
 
     # ---------- NAVBAR HTML ----------
     html = f"""
@@ -91,7 +90,8 @@ def navbar():
             text-decoration: none;
         }}
         .login-btn:hover {{
-            background: #e65c00;
+            background: #fff;
+            color: #FF6600;
         }}
         .profile-wrap {{
             position: relative;
@@ -136,6 +136,8 @@ def navbar():
         .profile-wrap.show .dropdown-content {{
             display: block;
         }}
+
+        /* Push main content down so it isn't hidden behind fixed navbar */
         .block-container {{
             padding-top: 100px !important;
         }}
@@ -148,13 +150,13 @@ def navbar():
           <div class="brand">StreetBase</div>
         </div>
         <div class="nav-options">
-            <a href="?page=home">Home</a>
-            <a href="?page=services">Services</a>
-            <a href="?page=case_studies">Case Studies</a>
-            <a href="?page=favourites">Favourites</a>
-            <a href="?page=emi_calc">EMI_Calc</a>
-            <a href="?page=news">News</a>
-            <a href="?page=AboutUs">About Us</a>
+            <a href="?page=home" target="_self">Home</a>
+            <a href="?page=services" target="_self">Services</a>
+            <a href="?page=case_studies" target="_self">Case Studies</a>
+            <a href="?page=favourites" target="_self">Favourites</a>
+            <a href="?page=emi_calc" target="_self">EMI_Calc</a>
+            <a href="?page=news" target="_self">News</a>
+            <a href="?page=AboutUs" target="_self">About Us</a>
             {auth_html}
         </div>
       </div>
@@ -164,12 +166,12 @@ def navbar():
         const profileBtn = document.getElementById('profileBtn');
         const profileWrap = document.getElementById('profileWrap');
         if (profileBtn) {{
-            profileBtn.addEventListener('click', e => {{
+            profileBtn.addEventListener('click', (e) => {{
                 e.stopPropagation();
                 profileWrap.classList.toggle('show');
             }});
         }}
-        document.addEventListener('click', e => {{
+        document.addEventListener('click', (e) => {{
             if (profileWrap && !profileWrap.contains(e.target)) {{
                 profileWrap.classList.remove('show');
             }}
@@ -178,4 +180,3 @@ def navbar():
     """
 
     st.markdown(html, unsafe_allow_html=True)
-    

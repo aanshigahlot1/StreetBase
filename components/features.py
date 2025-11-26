@@ -126,17 +126,9 @@ def load_feature_section():
     st.markdown("<h2 class='section-header'>💬 What Our Users Say</h2>", unsafe_allow_html=True)
     st.markdown("<p class='section-subtext'>Real experiences from our happy clients and users.</p>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        st.markdown("<div class='testimonial-box'>"
-                    "<p>StreetBase made our property evaluation 3x faster and more reliable. Love the interface!”</p>"
-                    "<b>– Riya Sharma, Realtor</b>"
-                    "</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='testimonial-box'>"
-                    "<p>“Highly accurate predictions. It’s like having a real estate expert in your pocket.”</p>"
-                    "<b>– Arjun Verma, Home Buyer</b>"
-                    "</div>", unsafe_allow_html=True)
+    from components.test import render_testimonials   # ensure correct import
+
+    render_testimonials(height=420, autoplay_interval=3000)
 
     st.markdown("<hr>", unsafe_allow_html=True)
 

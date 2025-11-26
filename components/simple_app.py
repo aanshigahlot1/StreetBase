@@ -4,6 +4,8 @@ import pandas as pd
 
 def load_valuation_section():
     # Title (no set_page_config here; keep this import-safe)
+    st.markdown('<div id="ai_model_section"></div>', unsafe_allow_html=True)
+
     st.markdown("<h1 style='text-align:center;'>🏠 AI Property Valuation Tool</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; font-size:18px;'>Get instant property valuations with 99.96% accuracy</p>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -103,7 +105,8 @@ def load_valuation_section():
             st.subheader("📞 Next Steps")
             col_a1, col_a2 = st.columns(2)
             if col_a1.button("👨‍💼 Expert Review", key="val_expert"):
-                st.info("Expert review requested!")
+                # st.session_state.scroll_to_contact = True  # flag for next page
+                st.switch_page("pages/AboutUs.py")
             if col_a2.button("📞 Contact Agent", key="val_agent"):
                 st.info("Agent will contact you!")
         else:

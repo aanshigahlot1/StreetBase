@@ -1,7 +1,11 @@
+from components.simple_app import load_valuation_section
+import streamlit.components.v1 as components  # add this at top
 import streamlit as st
 from streamlit_lottie import st_lottie # Keeping Lottie in case we want to use it elsewhere, though not in this specific reference image
 import requests # Also keeping for Lottie if needed
 import os
+
+
 # --- Page Configuration ---
 st.set_page_config(
     page_title="StreetBase - AI Real Estate Valuation",
@@ -123,7 +127,7 @@ def custom_css_injection():
         }
 
         .stButton > button[kind="secondary"]:hover {
-            background-color: #218838 !important;
+            background-color: white !important;
             box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
             transform: translateY(-2px);
         }
@@ -170,6 +174,14 @@ def custom_css_injection():
             margin: 0 auto;
             font-size: 1.1rem;
         }
+        
+                /* ACTIVE button style after click */
+        .clicked-btn {
+            background-color: white !important;
+            color: black !important;
+            border: 2px solid #007BFF !important;
+        }
+
 
         /* Remove default Streamlit header/footer (no gap) */
         #MainMenu {visibility: hidden;}
@@ -213,7 +225,7 @@ def render_hero_section():
     # Anchor that our CSS targets; the NEXT horizontal block (columns) becomes the card
     st.markdown('<div id="hero-card-anchor"></div>', unsafe_allow_html=True)
 
-    col_left, col_right = st.columns([2.5, 1], gap="large")
+    col_left, col_right = st.columns([2.5, 1.5], gap="large")
 
     with col_left:
         st.title("AI-Powered Real Estate Valuation")
@@ -233,13 +245,56 @@ def render_hero_section():
 
         st.write("")
         button_col1, button_col2, _ = st.columns([0.8, 0.8, 2])
-        with button_col1:
-            if st.button("Try AI Valuation", type="primary"):
-                st.balloons()
-                st.info("Navigating to the AI Valuation form!")
-        with button_col2:
-            if st.button("View Insights", type="secondary"):
-                st.success("Displaying market insights!")
+        # with button_col1:
+
+        #     # Create session state flags on first load
+        #     if "valuation_clicked" not in st.session_state:
+        #         st.session_state.valuation_clicked = False
+
+        #     if "scroll_to_model" not in st.session_state:
+        #         st.session_state.scroll_to_model = False
+
+        #     # ---------- Dynamic CSS for button ----------
+        #     button_css = f"""
+        #         <style>
+        #             .custom-ai-btn > button {{
+        #                 border-radius: 8px !important;
+        #                 font-weight: 600 !important;
+        #                 padding: 12px 25px !important;
+        #                 font-size: 1rem !important;
+        #                 transition: all 0.2s ease-in-out !important;
+        #                 border: none !important;
+        #                 box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+
+        #                 /* Normal vs Clicked style */
+        #                 background-color: {"white" if st.session_state.valuation_clicked else "#007BFF"} !important;
+        #                 color: {"black" if st.session_state.valuation_clicked else "white"} !important;
+        #             }}
+
+        #             .custom-ai-btn > button:hover {{
+        #                 transform: translateY(-2px);
+        #                 box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        #                 background-color: {"#f2f2f2" if st.session_state.valuation_clicked else "#0056b3"} !important;
+        #                 color: {"black" if st.session_state.valuation_clicked else "white"} !important;
+        #             }}
+        #         </style>
+        #     """
+        #     st.markdown(button_css, unsafe_allow_html=True)
+
+        #     # ---------- Button Wrapper ----------
+        #     st.markdown('<div class="custom-ai-btn">', unsafe_allow_html=True)
+
+        #     # ---------- Actual Button ----------
+        #     if st.button("Try AI Valuation", key="try_ai_btn"):
+        #         st.session_state.valuation_clicked = True
+        #         st.session_state.scroll_to_model = True  # trigger scroll
+
+        #     st.markdown('</div>', unsafe_allow_html=True)
+
+
+        # with button_col2:
+        #     if st.button("View Insights", type="secondary"):
+        #         st.success("Displaying market insights!")
 
     with col_right:
         st.markdown(
@@ -286,8 +341,25 @@ if __name__ == "__main__":
 
     render_brand_header() # Logo and SmartBricks title
     render_hero_section() # Main hero content and quick insights
+    # 🔽 The section we want to scroll to
+    load_valuation_section()
     render_cta_banner()   # Bottom call-to-action banner
     
     # Placeholder for other members' work (will also adopt the custom styles)
     st.markdown("<br><br>", unsafe_allow_html=True) # Add some vertical space
     
+    if st.session_state.get("scroll_to_model", False):
+        components.html(
+            """
+            <script>
+            // Work both when inside a component iframe or directly in the main document
+            const doc = window.parent ? window.parent.document : document;
+            const target = doc.getElementById("ai_model_section");
+            if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+            </script>
+            """,
+            height=10,   
+        )
+        st.session_state.scroll_to_model = False
