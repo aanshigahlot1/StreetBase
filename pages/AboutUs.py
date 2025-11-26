@@ -1,283 +1,192 @@
-# pages/AboutUs.py
+# feedback.py (Final Code with Post-Submission Rating Removed)
 
-# ---------------- TOP IMPORT FIXES ----------------
+# ---------------- IMPORTS ----------------
 from pathlib import Path
 from components.chatbot_ui import chatbot_popup
 import streamlit.components.v1 as components
 import sys
-
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-# ---------------------------------------------------
-
 import streamlit as st
 import qrcode
 import io
 
-from components.NavBar.navbar import navbar
-from backend.api.email_api import send_contact_email
+# Standard path setup
+ROOT = Path(__file__).resolve().parents[0]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+# ---------------------------------------------------
 
+def load_single_page():
+    
+    # --- Page Configuration ---
+    st.set_page_config(
+        page_title="About StreetBase", 
+        layout="wide",
+        initial_sidebar_state="collapsed" 
+    )
 
-def load_about_us_page():
-
-    st.set_page_config(page_title="StreetBase", layout="wide")
-
-    # ---------------- CSS ----------------
+    # ---------------- CSS (Complete Styles) ----------------
     st.markdown(
         """
     <style>
-    #MainMenu, header, footer {visibility: hidden;}
-    body, .block-container {
-        background-color: #FFFDF2;
-        color: #2b2b2b;
-        font-family: 'Segoe UI', sans-serif;
-        max-width: 95%;
-        margin: auto;
+    /* Global Streamlit Overrides */
+    #MainMenu, header, footer {
+        visibility: hidden; 
+        height: 0;
+        margin: 0;
+        padding: 0;
+    }
+    body, .block-container, p, div, span, li {
+        color: #2b2b2b !important; 
+        background-color: #FFFDF2 !important; 
+        font-family: 'Segoe UI', sans-serif; 
+        max-width: none; 
+        padding: 0 1rem;
     }
 
+    /* Hero Section Styling (MAXIMIZED BOX) */
     .hero-wrapper {
-        margin-top: 1.5rem;
-        margin-bottom: 2.5rem;
-        padding: 2.5rem 2rem;
+        margin-top: 2rem; 
+        margin-bottom: 3rem; 
+        padding: 3.5rem 3rem; 
         border-radius: 24px;
-        background: radial-gradient(circle at top left, #F5B895 0, #FFFDF2 45%, #EDE9D5 100%);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        border: 1px solid rgba(226,114,91,0.24);
+        background: radial-gradient(circle at top left, #F5B895 0, #FFFDF2 45%, #EDE9D5 100%); 
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
+        border: 2px solid rgba(226,114,91,0.4); 
     }
     .title {
-        font-size: 3rem;
-        font-weight: 800;
-        color: #004D00;
-        margin-bottom: 0.5rem;
-    }
-    .title span.highlight {
-        color: #E2725B;
-    }
-    .subtitle {
-        font-size: 1.15rem;
-        color: #3f3f3f;
-        margin-bottom: 1.25rem;
-    }
-    .hero-tag {
-        display: inline-block;
-        padding: 0.35rem 0.8rem;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        background: #004D00;
-        color: #FFFDF2;
-        text-transform: uppercase;
-        margin-bottom: 0.75rem;
-    }
-    .hero-pills {
-        margin-top: 1.4rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.6rem;
-    }
-    .pill {
-        padding: 0.45rem 0.9rem;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        border: 1px solid rgba(0,0,0,0.06);
-        background: rgba(255,255,255,0.85);
-        backdrop-filter: blur(6px);
-    }
-
-    .metric-card {
-        background: rgba(255,255,255,0.96);
-        border-radius: 18px;
-        padding: 1.1rem 1.2rem;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-        border-top: 4px solid #E2725B;
-        margin-bottom: 0.7rem;
-    }
-    .metric-value {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #004D00;
-        margin-bottom: 0.2rem;
-    }
-    .metric-label {
-        font-size: 0.9rem;
-        color: #555;
-    }
-
-    .section-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #004D00;
-        margin-top: 2.5rem;
-        margin-bottom: 0.75rem;
-        text-align: left;
-    }
-    .section-subtitle {
-        font-size: 0.98rem;
-        color: #555;
+        font-size: 4rem !important; 
+        font-weight: 900 !important; 
+        color: #004D00 !important; 
         margin-bottom: 1rem;
     }
-
-    .info-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+    .title span.highlight {
+        color: #E2725B !important; 
     }
-    .info-card {
-        flex: 1 1 260px;
-        background: #FFFFFF;
-        border-radius: 18px;
-        padding: 1.1rem 1.3rem;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-        border-left: 5px solid #F5B895;
+    .subtitle {
+        font-size: 1.3rem !important; 
+        color: #3f3f3f !important;
+        line-height: 1.7; 
     }
-    .info-card h4 {
-        margin: 0 0 0.4rem 0;
-        font-size: 1.05rem;
-        color: #004D00;
-    }
-    .info-card p {
-        margin: 0;
-        font-size: 0.95rem;
-        color: #444;
-    }
-    .info-badge {
-        display: inline-block;
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #E2725B;
-        margin-bottom: 0.35rem;
-        font-weight: 600;
-    }
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 1rem;
-        margin-top: 0.8rem;
-        margin-bottom: 1.5rem;
-    }
-    .feature-card {
-        background: #FFFFFF;
-        border-radius: 16px;
-        padding: 1rem 1.1rem;
-        border: 1px solid #E2E2E2;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-    }
-    .feature-card h4 {
-        margin: 0 0 0.35rem 0;
-        font-size: 1rem;
-        color: #004D00;
-    }
-    .feature-card p {
-        margin: 0;
+    .hero-tag {
+        background: #E2725B; 
+        color: #FFFDF2;
+        padding: 0.5rem 1rem;
         font-size: 0.9rem;
-        color: #444;
     }
-    .feature-tag {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #E2725B;
-        margin-bottom: 0.25rem;
-        text-transform: uppercase;
+    .hero-pills {
+        margin-top: 2rem;
     }
 
-    .timeline {
-        border-left: 3px solid #E2725B;
-        padding-left: 1rem;
-        margin-top: 0.5rem;
+    /* Hero Metrics */
+    .metric-card {
+        background: #FFFFFF !important; 
+        border-radius: 12px; 
+        padding: 1.2rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border-left: 5px solid #E2725B; 
+        margin-bottom: 1rem;
     }
-    .timeline-item {
-        margin-bottom: 0.9rem;
-        position: relative;
+    .metric-value {
+        font-size: 1.6rem; 
+        font-weight: 800;
+        color: #004D00 !important; 
     }
-    .timeline-item::before {
-        content: "";
-        position: absolute;
-        left: -1.2rem;
-        top: 0.2rem;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        border: 2px solid #E2725B;
-        background: #FFFDF2;
-    }
-    .timeline-item-title {
-        font-size: 0.98rem;
-        font-weight: 600;
-        color: #004D00;
-    }
-    .timeline-item-text {
-        font-size: 0.88rem;
-        color: #555;
+    .metric-label {
+        font-size: 0.95rem;
+        color: #555 !important;
     }
 
-    div[data-testid="stForm"] {
-        background-color: #FFFDF2;
-        padding: 35px 40px;
-        border-radius: 18px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        max-width: 800px;
-        margin: auto;
-        border: 1px solid #E2E2E2;
+    /* General Section Titles & Subtitles */
+    .section-title {
+        color: #004D00 !important; 
+        font-weight: 800 !important;
+        font-size: 2.5rem; 
+        margin-top: 3.5rem; 
+        margin-bottom: 0.8rem;
+    }
+    .section-subtitle {
+        color: #3f3f3f !important;
+        font-size: 1.1rem; 
+        line-height: 1.6;
+    }
+
+    /* Form Labels & Inputs (Outline Boxes & Visibility) */
+    .stForm label p {
+        font-weight: 700 !important; 
+        color: #004D00 !important; 
+        font-size: 1.05rem; 
     }
     .stTextInput > div > div > input,
-    .stTextArea textarea {
-        border: 2px solid #004D00 !important;
-        border-radius: 10px !important;
+    .stTextArea textarea,
+    .stSelectbox div[data-baseweb="select"] { 
+        border: 4px solid #004D00 !important; 
+        border-radius: 8px !important;
         padding: 10px !important;
-        font-size: 1rem !important;
+        color: #000000 !important; 
         background-color: #FFFFFF !important;
-        color: #000000 !important;
+        box-shadow: none !important;
     }
     .stButton button {
-        background-color: #F5B895 !important;
+        background-color: #E2725B !important; 
         color: #FFFFFF !important;
-        border-radius: 10px !important;
         font-weight: 700 !important;
-        padding: 10px 24px !important;
-        border: none !important;
-    }
-    .stButton button:hover {
-        background-color: #E2725B !important;
-        transform: scale(1.05);
-    }
-    .contact-success {
-        text-align: center;
-        color: #004D00;
-        font-weight: 600;
-        background-color: #EAF5EA;
-        border-radius: 10px;
-        padding: 12px;
-        margin-top: 15px;
+        border-radius: 10px !important;
     }
 
-    .footer {
-        text-align: center;
-        color: #004D00;
-        background-color: #EDE9D5;
-        padding: 1.5rem 0;
-        margin-top: 3rem;
-        border-top: 2px solid #E2725B;
+    /* --- CONTACT CARD FIX: Equal Height & No Overflow --- */
+    .contact-card-container {
+        display: flex;
+        gap: 20px; 
+        margin-bottom: 2rem;
     }
+    .contact-card {
+        background-color: #FFFFFF;
+        border: 1px solid #E2E2E2;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        flex: 1; 
+        text-align: center;
+        transition: transform 0.2s;
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between; 
+        min-height: 220px; 
+        overflow: hidden; 
+    }
+    .contact-detail {
+        color: #004D00 !important; 
+        font-size: 1.4em; 
+        flex-grow: 1; 
+        display: flex;
+        align-items: center; 
+        justify-content: center; 
+        word-break: break-word; 
+        white-space: normal; 
+    }
+    .contact-title {
+        color: #E2725B !important; 
+        font-weight: bold;
+    }
+    .footer {
+        background-color: #EDE9D5;
+        color: #004D00 !important;
+        border-top: 2px solid #E2725B;
+        padding: 1.5rem 0;
+        margin-top: 4rem; 
+    }
+    /* Hide standard Streamlit divider */
     hr {
-        border: none;
-        height: 2px;
-        background-color: #E2725B;
-        margin: 3rem 0;
+        display: none; 
     }
     </style>
     """,
         unsafe_allow_html=True,
     )
 
-    # ---------------- NAVBAR ----------------
-    navbar()
-
-    # ---------------- HERO / INTRO ----------------
+    # ---------------- I. ABOUT US INFORMATIONAL CONTENT ----------------
+    
+    # --- HERO / INTRO SECTION ---
     hero_col1, hero_col2 = st.columns([2, 1], gap="large")
     with hero_col1:
         st.markdown(
@@ -324,15 +233,15 @@ def load_about_us_page():
             unsafe_allow_html=True,
         )
 
-    st.divider()
-
-    # ---------------- WHY STREETBASE ----------------
+    # --- WHY STREETBASE SECTION ---
     st.markdown("<h2 class='section-title'>Why StreetBase?</h2>", unsafe_allow_html=True)
     st.markdown(
-        "<p class='section-subtitle'>"
-        "Real estate decisions in India are often influenced by hearsay, outdated listings, or biased suggestions. "
-        "StreetBase aims to change that by putting data, transparency, and sustainability at the center of every decision."
-        "</p>",
+        """
+        <p class='section-subtitle'>
+        Real estate decisions in India are often influenced by hearsay, outdated listings, or biased suggestions. 
+        StreetBase aims to change that by putting data, transparency, and sustainability at the center of every decision.
+        </p>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -368,9 +277,7 @@ def load_about_us_page():
         unsafe_allow_html=True,
     )
 
-    st.divider()
-
-    # ---------------- HOW STREETBASE WORKS ----------------
+    # --- HOW STREETBASE WORKS SECTION ---
     st.markdown("<h2 class='section-title'>How StreetBase Works</h2>", unsafe_allow_html=True)
     st.markdown(
         "<p class='section-subtitle'>From raw property details to actionable insights, StreetBase follows a clear and explainable pipeline.</p>",
@@ -456,50 +363,137 @@ def load_about_us_page():
             unsafe_allow_html=True,
         )
 
-    st.divider()
-
-    # ---------------- FUTURE SCOPE ----------------
+    # --- FUTURE SCOPE SECTION ---
     st.markdown("<h2 class='section-title'>🚀 Future Scope</h2>", unsafe_allow_html=True)
     st.markdown(
         """
-        - 🌍 **Live Real Estate API Integration** – connect to real-time listings and transaction data.  
-        - ☁️ **Cloud Deployment (AWS / GCP)** – scalable infrastructure for city-level evaluations.  
-        - 🧠 **Explainable AI (SHAP, LIME)** – deeper interpretability for end users and partners.  
-        - 📊 **Interactive Analytics Dashboard** – visualize trends across cities, localities, and property types.  
-        - 🤖 **Integrated Chatbot Assistant** – guided exploration for first-time buyers and investors.  
+        <p class='section-subtitle'>We're continuously innovating to bring you even more powerful insights and features:</p>
+        <ul>
+            <li>🌍 **Live Real Estate API Integration** – Connect to real-time listings and transaction data from various platforms for up-to-the-minute market analysis.</li>  
+            <li>☁️ **Cloud Deployment (AWS / GCP)** – Develop scalable infrastructure for city-level and pan-India property evaluations, ensuring high availability and performance.</li>  
+            <li>🧠 **Explainable AI (SHAP, LIME)** – Implement advanced interpretability techniques to provide deeper, more understandable explanations for our AI's price predictions to end-users and partners.</li>  
+            <li>📊 **Interactive Analytics Dashboard** – Design and launch a comprehensive dashboard for visualizing trends across cities, localities, and property types, empowering detailed market research.</li>  
+            <li>🤖 **Integrated Chatbot Assistant** – Introduce an AI-powered chatbot to offer guided exploration for first-time buyers and investors, answering queries and providing personalized recommendations.</li>  
+        </ul>
         """,
         unsafe_allow_html=True,
     )
 
-    st.divider()
 
-    # ---------------- CONTACT FORM ----------------
+    # ====================================================================
+    # ---------------- II. FEEDBACK / CONTACT CONTENT ----------------
+    # ====================================================================
+
     st.markdown("<div id='contact_section'></div>", unsafe_allow_html=True)
-    st.markdown("<h2 class='section-title'>📬 Contact Us</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 class='section-title'>📬 Submit Feedback or Get In Touch</h2>", unsafe_allow_html=True)
+    st.markdown(
+        "### We value your input! Use the form below to submit **feedback**, **report an issue**, or **get in touch**."
+    )
 
-    with st.form("contact_form"):
-        name = st.text_input("Your Name", placeholder="Enter your full name")
-        email = st.text_input("Your Email", placeholder="Enter your email address")
-        message = st.text_area("Your Message", placeholder="Type your message here...")
+    with st.form(key='feedback_form', clear_on_submit=False): 
+        
+        # 1. Inquiry Type Selector (Vertical Stack)
+        query_type = st.selectbox(
+            label="Reason for Contact*", 
+            options=["Select a Reason", "General Inquiry", "Technical Support", "Partnership/Media", "Feedback/Suggestion"],
+            key="query_selector"
+        )
 
-        submitted = st.form_submit_button("Send Message")
+        # Form Layout (Vertical Stack)
+        name = st.text_input(label="Your Name*", placeholder="Enter your full name", key="form_name")
+        email = st.text_input(label="Your Email Address*", placeholder="e.g., streetbase@example.com", key="form_email")
+        
+        subject = st.text_input(label="Subject (Optional)", placeholder="What is your feedback or query about?", key="form_subject")
+        message = st.text_area(label="Your Message/Feedback*", placeholder="Type your message here...", height=150, key="form_message")
+        
+        # Checkbox for privacy consent
+        privacy_consent = st.checkbox(
+            "I confirm that I have read and agree to the StreetBase Privacy Policy.", 
+            value=False, 
+            key="consent_check"
+        )
+        
+        submit_button = st.form_submit_button(label='🚀 Send Feedback / Message')
 
-        if submitted:
-            if not name or not email or not message:
-                st.error("⚠️ Please fill out all fields.")
-            else:
-                result = send_contact_email(name, email, message)
+    # ---------------- DIRECT CONTACT & MAP SECTION (Always Renders) ----------------
+    
+    st.markdown("<h2 class='section-title'>📞 Direct Contact Information</h2>", unsafe_allow_html=True)
 
-                if result["status"]:
-                    st.markdown(
-                        '<div class="contact-success">✅ Thank you! We will reach out soon.</div>',
-                        unsafe_allow_html=True,
-                    )
-                else:
-                    st.error(f"❌ Email failed: {result['error']}")
+    # --- CONTACT CARD: Three separate, equal-sized boxes ---
+    st.markdown('<div class="contact-card-container">', unsafe_allow_html=True)
+    
+    # Define contact data with explicit HTML structure for flex control
+    contact_data_html = [
+        f"""
+        <div class="contact-card">
+            <div class="contact-title">📱 Call Us</div>
+            <a href="tel:6264543645" style="text-decoration: none;">
+                <div class="contact-detail">6264543645</div>
+            </a>
+            <div class="contact-hours">Available Mon-Fri, 9am - 5pm IST</div>
+        </div>
+        """,
+        f"""
+        <div class="contact-card">
+            <div class="contact-title">📩 Support Email</div>
+            <a href="mailto:contact_streetbase@gmail.com" style="text-decoration: none;">
+                <div class="contact-detail">contact_streetbase@gmail.com</div>
+            </a>
+            <div class="contact-hours">We aim to reply within 24 hours</div>
+        </div>
+        """,
+        f"""
+        <div class="contact-card">
+            <div class="contact-title">📍 Visit Our Office</div>
+            <a href="https://maps.google.com/maps?q=Origin+Towers,+Hi-Tech+City,+Hyderabad,+Telangana&t=&z=15&ie=UTF8&iwloc=&output=embed2" target="_blank" style="text-decoration: none;">
+                <div class="contact-detail">Titus Towers, Building No, 12, IT Park, Building Number, 10, Hitech City Rd, Madhapur, Hyderabad, Telangana 500081</div>
+            </a>
+            <div class="contact-hours">Office Hours: Mon-Fri, 9am - 6pm</div>
+        </div>
+        """
+    ]
 
-    st.divider()
+    # Use columns to render the custom HTML
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown(contact_data_html[0], unsafe_allow_html=True)
+    with col2:
+        st.markdown(contact_data_html[1], unsafe_allow_html=True)
+    with col3:
+        st.markdown(contact_data_html[2], unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True) # Close the container
 
+    # --- EMBEDDED MAP SECTION ---
+    st.markdown("<h2 class='section-title'>🗺️ Find Our Location</h2>", unsafe_allow_html=True)
+    st.markdown("<p class='section-subtitle'>View our office location and get directions directly on the map below.</p>", unsafe_allow_html=True)
+
+    # ADDRESS FOR MAP EMBED
+    address_query = "Titus Towers, Building No 12, IT Park, Hitech City Rd, Madhapur, Hyderabad, Telangana 500081"
+    map_embed_url = f"https://maps.google.com/maps?q=Origin+Towers,+Hi-Tech+City,+Hyderabad,+Telangana&t=&z=15&ie=UTF8&iwloc=&output=embed3{address_query}&t=m&z=15&ie=UTF8&iwloc=&output=embed"
+
+    st.markdown(
+        f"""
+        <iframe 
+            width="100%" 
+            height="450" 
+            frameborder="0" 
+            scrolling="no" 
+            marginheight="0" 
+            marginwidth="0" 
+            src="{map_embed_url}"
+            allowfullscreen
+            style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);"
+        >
+        </iframe>
+        <div style="font-size: 0.8em; text-align: right; margin-top: 5px;">
+            <a href="https://maps.google.com/maps?q=Origin+Towers,+Hi-Tech+City,+Hyderabad,+Telangana&t=&z=15&ie=UTF8&iwloc=&output=embed4{address_query}" target="_blank">Open in Google Maps</a>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+    
     # ---------------- CONNECT WITH US ----------------
     st.markdown("<h2 class='section-title'>🌐 Connect With Us</h2>", unsafe_allow_html=True)
     st.markdown(
@@ -527,6 +521,7 @@ def load_about_us_page():
             qr.save(buf, format="PNG")
             st.image(buf.getvalue(), width=130)
         except Exception:
+<<<<<<< HEAD
             st.write("QR Code could not be generated")
             
     chatbot_popup()  # 👈 this will render the StreetBase chat section here
@@ -538,19 +533,44 @@ def load_about_us_page():
             Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
         </div>
     """, unsafe_allow_html=True)
+=======
+            st.write("QR Code could not be generated (Ensure qrcode[pil] is installed)")
 
-    # ---- Auto-scroll if coming from Expert Review button ----
-    if st.session_state.get("scroll_to_contact", False):
-        components.html(
-            """
-            <script>
-            const parentDoc = window.parent ? window.parent.document : document;
-            const target = parentDoc.getElementById("contact_section");
-            if (target) {
-                target.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-            </script>
-            """,
-            height=0,
-        )
-        st.session_state.scroll_to_contact = False
+
+    # ---------------- FOOTER (Centered) ----------------
+    st.markdown(
+        """
+        <div class="footer">
+            <div style="text-align: center;">
+                <b>StreetBase</b> © 2025 — Real Estate Intelligence for Smarter, Sustainable Cities
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # --- FINAL SUBMISSION HANDLER EXECUTION ---
+    if submit_button:
+        # Check current values of the form fields
+        current_name = st.session_state.get("form_name", "")
+        current_email = st.session_state.get("form_email", "")
+        current_message = st.session_state.get("form_message", "")
+        current_query_type = st.session_state.get("query_selector", "Select a Reason")
+>>>>>>> 2726ff23d980c3cd8e735884dfae65e59eb16a71
+
+        # --- VALIDATIONS (Category, Fields, Consent) ---
+        if current_query_type == "Select a Reason":
+            st.error("⚠️ Please select a valid **Reason for Contact**.")
+        elif not current_name or not current_email or not current_message:
+            st.error("🚨 Please fill in your Name, Email, and Message before submitting.")
+        elif "@" not in current_email:
+            st.error("❌ Please enter a valid Email address.")
+        elif not st.session_state.get("consent_check"):
+            st.error("🛑 Please agree to the Privacy Policy before submitting.")
+        else:
+            # --- SUCCESS ACTION (ONLY the success message remains) ---
+            st.success(f"✅ Thank you, **{current_name}**! Your **{current_query_type}** has been submitted.")
+            # The post-submission rating/feedback section has been removed below.
+            
+# --- EXECUTION BLOCK (Guaranteed to load) ---
+load_single_page()

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Signin.py
 import streamlit as st
 import pyrebase
@@ -156,76 +155,14 @@ def load_signin_page():
         st.session_state.user = None
 
     handle_google_callback()  # Check for Google OAuth callback
-=======
-#Signin.py
-
-import streamlit as st
-import time
-import sys, os
-
-st.markdown("<style>.smartbricks-nav{display:none!important;}</style>", unsafe_allow_html=True)
-# --- Force include project root path ---
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
-
-from utils.auth_db import init_db, register_user, verify_user
-from utils.auth_db import init_db
-# --- Handle logout from navbar ---
-query_params = st.query_params
-if "logout" in query_params and query_params["logout"] == "true":
-    st.session_state.logged_in = False
-    st.session_state.username = ""
-    st.success("You have been logged out.")
-    st.query_params.clear()
-    st.rerun()
-
-init_db()
-
-def load_signin_page():
-    """Load Login / Register Page"""
-
-    # Initialize DB
-    init_db()
-
-    st.set_page_config(page_title="Login | StreetBase AI", page_icon="🔐", layout="centered")
-
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-    if "username" not in st.session_state:
-        st.session_state.username = ""
-
-    def logout_user():
-        st.session_state.logged_in = False
-        st.session_state.username = ""
->>>>>>> 2726ff23d980c3cd8e735884dfae65e59eb16a71
 
     # ---------- CSS ----------
     st.markdown("""
         <style>
             header, footer {visibility: hidden;}
             div.block-container {padding-top: 2rem;}
-<<<<<<< HEAD
             .login-title {text-align:center;color:#FF6600;font-size:1.6rem;font-weight:bold;margin-bottom:1rem;}
             .stButton>button {background-color:#FF6600;color:white;border-radius:10px;font-weight:600;width:100%;height:2.5rem;}
-=======
-            .login-title {
-                text-align: center;
-                color: #FF6600;
-                font-size: 1.6rem;
-                font-weight: bold;
-                margin-bottom: 1rem;
-            }
-            .stButton>button {
-                background-color: #FF6600;
-                color: white;
-                border-radius: 10px;
-                font-weight: 600;
-                width: 100%;
-                height: 2.5rem;
-            }
->>>>>>> 2726ff23d980c3cd8e735884dfae65e59eb16a71
         </style>
     """, unsafe_allow_html=True)
 
@@ -233,7 +170,6 @@ def load_signin_page():
     if not st.session_state.logged_in:
         tabs = st.tabs(["🔐 Login", "🆕 Register"])
 
-<<<<<<< HEAD
         # -------- LOGIN TAB --------
         with tabs[0]:
             st.markdown("<div class='login-title'>User Login</div>", unsafe_allow_html=True)
@@ -298,52 +234,3 @@ def load_signin_page():
 # ----------------------------
 if __name__ == "__main__":
     load_signin_page()
-
-    chatbot_popup()  # 👈 this will render the StreetBase chat section here
-    
-    st.markdown("""
-        <div class='footer'>
-            © 2025 <b>StreetBase</b> | All Rights Reserved <br>
-            Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
-        </div>
-    """, unsafe_allow_html=True)
-=======
-        with tabs[0]:
-            st.markdown("<div class='login-title'>User Login</div>", unsafe_allow_html=True)
-            username = st.text_input("Username", key="login_user")
-            password = st.text_input("Password", type="password", key="login_pass")
-
-            if st.button("Login"):
-                if verify_user(username, password):
-                    with st.spinner("Logging in..."):
-                        time.sleep(1)
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.success(f"Welcome {username} 👋")
-                    st.query_params.clear()
-                    st.query_params["page"] = "home"
-                    st.rerun()
-
-                else:
-                    st.error("❌ Invalid username or password.")
-
-        with tabs[1]:
-            st.markdown("<div class='login-title'>Create Account</div>", unsafe_allow_html=True)
-            new_user = st.text_input("Choose a username", key="reg_user")
-            new_pass = st.text_input("Choose a password", type="password", key="reg_pass")
-
-            if st.button("Register"):
-                if register_user(new_user, new_pass):
-                    st.success("✅ Registered successfully! You can now log in.")
-                else:
-                    st.warning("⚠️ Username already exists.")
-    else:
-        st.success(f"✅ Logged in as: {st.session_state.username}")
-        st.write("Welcome to your **Dashboard!** Here you can view personalized content.")
-        st.markdown("---")
-
-        if st.button("Logout"):
-            logout_user()
-            st.rerun()
-    
->>>>>>> 2726ff23d980c3cd8e735884dfae65e59eb16a71
