@@ -124,6 +124,23 @@ def load_case_studies_page():
             .btn-back button:hover {
                 background-color: #004B8D !important;
             }
+
+            /* --- Footer (same style as About Us page) --- */
+            .footer {
+                text-align: center;
+                color: #004D00;
+                background-color: #EDE9D5;
+                padding: 1.5rem 0;
+                margin-top: 3rem;
+                border-top: 2px solid #E2725B;
+            }
+            .footer a {
+                color: #E2725B;
+                text-decoration: none;
+            }
+            .footer a:hover {
+                text-decoration: underline;
+            }
         </style>
         """,
         unsafe_allow_html=True,

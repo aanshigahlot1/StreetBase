@@ -109,6 +109,11 @@ def load_about_us_page():
         margin-bottom: 0.75rem;
         text-align: left;
     }
+    /* ✅ helper class to center specific section titles */
+    .section-center {
+        text-align: center;
+    }
+
     .section-subtitle {
         font-size: 0.98rem;
         color: #555;
@@ -211,6 +216,7 @@ def load_about_us_page():
         color: #555;
     }
 
+    /* contact & feedback forms */
     div[data-testid="stForm"] {
         background-color: #FFFDF2;
         padding: 35px 40px;
@@ -320,7 +326,7 @@ def load_about_us_page():
 
     st.divider()
 
-    # ---------------- WHAT WE DO / PROBLEM & SOLUTION ----------------
+    # ---------------- WHY STREETBASE ----------------
     st.markdown("<h2 class='section-title'>Why StreetBase?</h2>", unsafe_allow_html=True)
     st.markdown(
         "<p class='section-subtitle'>"
@@ -467,10 +473,10 @@ def load_about_us_page():
 
     st.divider()
 
-    # ---------------- CONTACT FORM (UNCHANGED) ----------------
-    # 🔽 Wrap the contact form in a div with a stable id
+    # ---------------- CONTACT FORM ----------------
     st.markdown("<div id='contact_section'></div>", unsafe_allow_html=True)
-    st.markdown("<h2 class='section-title'>📬 Contact Us</h2>", unsafe_allow_html=True)
+    # ✅ centered title now
+    st.markdown("<h2 class='section-title section-center'>📬 Contact Us</h2>", unsafe_allow_html=True)
 
     with st.form("contact_form"):
         name = st.text_input("Your Name", placeholder="Enter your full name")
@@ -492,6 +498,30 @@ def load_about_us_page():
                     )
                 else:
                     st.error(f"❌ Email failed: {result['error']}")
+
+    st.divider()
+
+    # ---------------- FEEDBACK FORM (NEW) ----------------
+    st.markdown("<h2 class='section-title section-center'>📝 Share Your Feedback</h2>", unsafe_allow_html=True)
+
+    with st.form("feedback_form"):
+        fb_name = st.text_input("Your Name (optional)", placeholder="Enter your name or nickname")
+        fb_feedback = st.text_area(
+            "Your Feedback",
+            placeholder="Tell us what you liked, what felt confusing, or what you'd love to see next..."
+        )
+
+        fb_submitted = st.form_submit_button("Submit Feedback")
+
+        if fb_submitted:
+            if not fb_feedback:
+                st.error("⚠️ Please add some feedback before submitting.")
+            else:
+                # 👉 Here you can later plug in DB / email / logging
+                st.markdown(
+                    '<div class="contact-success">🙏 Thanks! Your feedback has been recorded.</div>',
+                    unsafe_allow_html=True
+                )
 
     st.divider()
 
@@ -524,6 +554,7 @@ def load_about_us_page():
             st.write("QR Code could not be generated")
 
     # ---------------- CHATBOT ----------------
+    from components.chatbot_ui import chatbot_popup
     chatbot_popup()  # render the StreetBase chat
 
     # ---------------- FOOTER ----------------
@@ -538,7 +569,8 @@ def load_about_us_page():
         unsafe_allow_html=True,
     )
 
-   # ---- Auto-scroll if coming from Expert Review button ----
+
+# ---- Auto-scroll if coming from Expert Review button ----
 if st.session_state.get("scroll_to_contact", False):
     components.html(
         """
@@ -548,7 +580,6 @@ if st.session_state.get("scroll_to_contact", False):
         if (target) {
             target.scrollIntoView({ behavior: "smooth", block: "start" });
         }
-
         </script>
         """,
         height=0,

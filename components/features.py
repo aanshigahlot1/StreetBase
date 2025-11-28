@@ -72,21 +72,21 @@ def load_feature_section():
             color: var(--primary-color);
         }
 
-        /* ==== Footer ==== */
+        /* ==== Footer (same style as About Us page) ==== */
         .footer {
             text-align: center;
-            color: var(--text-color);
-            font-size: 14px;
-            padding: 30px 0 15px 0;
-            border-top: 1px solid var(--secondary-bg);
-            background-color: var(--background-color);
+            color: #004D00;
+            background-color: #EDE9D5;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+            border-top: 2px solid #E2725B;
         }
         .footer a {
-            color: var(--accent-color);
+            color: #E2725B;
             text-decoration: none;
         }
         .footer a:hover {
-            color: #e55b00;
+            text-decoration: underline;
         }
 
         /* ==== Responsive ==== */
@@ -102,23 +102,32 @@ def load_feature_section():
 
     col1, col2, col3 = st.columns(3, gap="large")
     with col1:
-        st.markdown("<div class='feature-card'>"
-                    "<img src='https://cdn-icons-png.flaticon.com/512/1077/1077012.png' width='60'>"
-                    "<h4>AI Price Prediction</h4>"
-                    "<p>Get accurate property valuation instantly using advanced ML models.</p>"
-                    "</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='feature-card'>"
+            "<img src='https://cdn-icons-png.flaticon.com/512/1077/1077012.png' width='60'>"
+            "<h4>AI Price Prediction</h4>"
+            "<p>Get accurate property valuation instantly using advanced ML models.</p>"
+            "</div>",
+            unsafe_allow_html=True
+        )
     with col2:
-        st.markdown("<div class='feature-card'>"
-                    "<img src='https://cdn-icons-png.flaticon.com/512/3176/3176366.png' width='60'>"
-                    "<h4>Smart Insights</h4>"
-                    "<p>Understand real-time market trends and make informed investment decisions.</p>"
-                    "</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='feature-card'>"
+            "<img src='https://cdn-icons-png.flaticon.com/512/3176/3176366.png' width='60'>"
+            "<h4>Smart Insights</h4>"
+            "<p>Understand real-time market trends and make informed investment decisions.</p>"
+            "</div>",
+            unsafe_allow_html=True
+        )
     with col3:
-        st.markdown("<div class='feature-card'>"
-                    "<img src='https://cdn-icons-png.flaticon.com/512/2769/2769339.png' width='60'>"
-                    "<h4>Compare Properties</h4>"
-                    "<p>Evaluate listings side by side based on area, pricing, and demand data.</p>"
-                    "</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='feature-card'>"
+            "<img src='https://cdn-icons-png.flaticon.com/512/2769/2769339.png' width='60'>"
+            "<h4>Compare Properties</h4>"
+            "<p>Evaluate listings side by side based on area, pricing, and demand data.</p>"
+            "</div>",
+            unsafe_allow_html=True
+        )
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
@@ -133,7 +142,9 @@ def load_feature_section():
     st.markdown("<hr>", unsafe_allow_html=True)
 
     chatbot_popup()  # 👈 this will render the StreetBase chat section here
+
     # --- Footer ---
+    st.markdown("---")
     st.markdown("""
         <div class='footer'>
             © 2025 <b>StreetBase</b> | All Rights Reserved <br>

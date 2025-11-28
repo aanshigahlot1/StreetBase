@@ -3,7 +3,7 @@ from components.chatbot_ui import chatbot_popup
 import streamlit as st  # pyright: ignore[reportMissingImports]
 import pandas as pd
 from datetime import datetime, timedelta, timezone
-from components.NavBar.navbar import navbar # pyright: ignore[reportMissingImports]
+from components.NavBar.navbar import navbar  # pyright: ignore[reportMissingImports]
 import requests
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -21,6 +21,29 @@ st.set_page_config(page_title="News & Articles", layout="wide")
 
 # Show navbar if you have it
 navbar()
+
+# ---------- Shared footer CSS ----------
+st.markdown("""
+    <style>
+        .footer {
+            text-align: center;
+            color: #004D00;
+            background-color: #EDE9D5;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+            border-top: 2px solid #E2725B;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .footer a {
+            color: #E2725B;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- Configuration ---
 API_KEY = "d4d290fde3d8464b8d689e5726ebfd45"
@@ -50,13 +73,16 @@ INDIA_KEYWORDS = [
     "bangalore", "hyderabad", "pune", "chennai",
 ]
 
+
 def is_indian(text):
     t = text.lower()
     return any(k in t for k in INDIA_KEYWORDS)
 
+
 def is_real_estate(text):
     t = text.lower()
     return any(k in t for k in REAL_ESTATE_KEYWORDS)
+
 
 def is_relevant_article(article):
     text = (
@@ -92,6 +118,7 @@ def train_and_save_model():
     joblib.dump(model, MODEL_PATH)
     return model
 
+
 # Load or train the model
 if os.path.exists(MODEL_PATH):
     try:
@@ -100,6 +127,7 @@ if os.path.exists(MODEL_PATH):
         classifier = train_and_save_model()
 else:
     classifier = train_and_save_model()
+
 
 def ml_categorize_article(article_text):
     """Uses the trained ML model to predict the primary category."""
@@ -117,15 +145,14 @@ def get_domain(url):
     except Exception:
         return "Unknown"
 
+
 def human_time_from_iso(iso_string):
     """Convert ISO-8601 datetime to human-friendly relative time."""
     try:
-        # handle common formats
         dt = None
         try:
             dt = datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
         except Exception:
-            # fallback for other formats
             dt = datetime.strptime(iso_string[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
 
         now = datetime.now(tz=timezone.utc)
@@ -143,6 +170,7 @@ def human_time_from_iso(iso_string):
         return f"{int(s // 86400)} days ago"
     except Exception:
         return iso_string
+
 
 def extract_tags(article):
     """Return small set of emoji-prefixed tags based on title/description."""
@@ -163,6 +191,7 @@ def extract_tags(article):
         tags.append("📰 News")
     return tags
 
+
 # --- Data Fetching ---
 def get_news_data(query: str, page_size: int = 50):
     params = {
@@ -181,7 +210,6 @@ def get_news_data(query: str, page_size: int = 50):
         news = response.json().get("articles", [])
 
         for i, item in enumerate(news):
-
             published_at = item.get("publishedAt") or datetime.now(timezone.utc).isoformat()
             content_for_categorization = f"{item.get('title', '')} {item.get('description', '')}"
 
@@ -205,7 +233,6 @@ def get_news_data(query: str, page_size: int = 50):
             # fallback data...
         ]
 
-    # ✅ APPLY FILTER HERE, AFTER FETCHING
     articles_data = [
         a for a in articles_data
         if is_relevant_article(a)
@@ -224,11 +251,9 @@ def categorize_articles(articles):
         categorized_news[cat] = []
 
     for article in articles:
-        # Use the ML model for primary categorization
         ml_categories = ml_categorize_article(article["content_text"])
         article["categories"] = ml_categories
 
-        # Populate Trending and Most Read (using popularity_score)
         if article.get("popularity_score", 9999) <= 10:
             categorized_news["Trending"].append(article)
         if article.get("popularity_score", 9999) <= 5:
@@ -240,150 +265,196 @@ def categorize_articles(articles):
             else:
                 categorized_news.setdefault(cat, []).append(article)
 
-    # Remove duplicates within each category
     for category in list(categorized_news.keys()):
         unique_articles = {a['id']: a for a in categorized_news[category]}.values()
         categorized_news[category] = list(unique_articles)
 
-    # Remove empty categories
     categorized_news = {k: v for k, v in categorized_news.items() if v}
     return categorized_news
 
+
 def render_article_card(article, is_featured=False):
-    """Renders a single article card using HTML/Markdown but preserves your main theme."""
+    """Renders a single article card as pure HTML so background wraps everything."""
     card_class = "featured-article" if is_featured else "article-card"
     title_class = "featured-title" if is_featured else "article-title"
-    desc_class = "featured-description" if is_featured else "article-description"
 
-    # CSS: kept your gradient/theme but add small tag & meta styling
     st.markdown("""
         <style>
+        .article-card, .featured-article {
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+        }
         .article-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .article-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-        }
-        .article-title {
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .article-title a { color: white; text-decoration: none; }
-        .article-title a:hover { text-decoration: underline; }
-        .article-description {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-        .article-meta {
-            color: rgba(255,255,255,0.85);
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-        .article-category {
-            display: inline-block;
-            background-color: rgba(255, 255, 255, 0.18);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-right: 8px;
-            margin-top: 5px;
         }
         .featured-article {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
         }
-        .featured-title { color: white; font-size: 28px; font-weight: bold; margin-bottom: 15px; }
-        .featured-description { color: rgba(255,255,255,0.95); font-size: 16px; line-height:1.8; margin-bottom:15px; }
 
-        /* small tag chips inspired by the second file but matching main theme */
+        .card-inner {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .card-image {
+            width: 32%;
+            min-width: 220px;
+        }
+        .card-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            flex: 1;
+        }
+
+        .article-title, .featured-title {
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .article-title {
+            font-size: 18px;
+        }
+        .featured-title {
+            font-size: 26px;
+        }
+        .article-title a,
+        .featured-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .article-title a:hover,
+        .featured-title a:hover {
+            text-decoration: underline;
+        }
+
+        .article-description-text {
+            color: rgba(255, 255, 255, 0.94);
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .article-meta {
+            color: rgba(255,255,255,0.92);
+            font-size: 13px;
+        }
+
+        .meta-tag-box {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 10px;
+            background: rgba(0, 0, 0, 0.16);
+            border-radius: 999px;
+            padding: 6px 14px;
+            margin-bottom: 10px;
+        }
+        .meta-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+        }
+        .meta-tags {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+
         .tag-chip {
             display:inline-block;
-            background: rgba(255,255,255,0.12);
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 12px;
+            background: rgba(255,255,255,0.18);
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 999px;
             margin-right:6px;
-            font-size:12px;
-        }
-        div[data-testid="stVerticalBlock"] > .featured-article,
-        div[data-testid="stHorizontalBlock"] > .featured-article {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+            font-size:11px;
+            white-space: nowrap;
         }
 
-        div[data-testid="stVerticalBlock"],
-        div[data-testid="stHorizontalBlock"] {
-            background: transparent !important;
+        .read-link {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            text-decoration: none;
         }
-        .featured-article:not(.featured-article) {
-            background: none !important;
+        .read-link:hover {
+            text-decoration: underline;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Domain + human time + tags
     domain = get_domain(article.get("url", "#"))
-    human_published = human_time_from_iso(article.get("publishedAt", datetime.now(timezone.utc).isoformat()))
+    human_published = human_time_from_iso(
+        article.get("publishedAt", datetime.now(timezone.utc).isoformat())
+    )
     tags = extract_tags(article)
+    author = article.get("author", "Unknown")
+    image_url = (
+        article.get("image_url")
+        or article.get("urlToImage")
+        or "https://via.placeholder.com/500x300.png?text=News"
+    )
 
-    # Build HTML card (keeps original look but adds image, time, domain, small tag chips)
-    image_url = article.get("image_url") or article.get("urlToImage") or "https://via.placeholder.com/500x300.png?text=News"
-    title_html = f'<div class="{title_class}"><a href="{article["url"]}" target="_blank">{article["title"]}</a></div>'
-    meta_html = f'<div class="article-meta">{domain} • {human_published} • By <strong>{article.get("author","Unknown")}</strong></div>'
-    tag_html = "".join([f'<span class="tag-chip">{t}</span>' for t in tags])
-
-    # Truncate description
     desc = article.get("description", "") or ""
     if len(desc) > 220:
         desc = desc[:220].rstrip() + "…"
 
-    # Render as columns keeping your layout
-    st.markdown(f'<div class="{card_class}">', unsafe_allow_html=True)
-    cols = st.columns([1.2, 2.5], gap="large")
-    with cols[0]:
-        try:
-            st.image(image_url, use_container_width=True)
-        except Exception:
-            st.image("https://via.placeholder.com/500x300.png?text=News", use_container_width=True)
+    meta_text = f"{domain} • {human_published} • By <strong>{author}</strong>"
+    tag_html = "".join([f'<span class="tag-chip">{t}</span>' for t in tags])
 
-    with cols[1]:
-        st.markdown(title_html, unsafe_allow_html=True)
-        st.markdown(meta_html, unsafe_allow_html=True)
-        st.markdown(tag_html, unsafe_allow_html=True)
-        st.write(desc)
-        st.markdown(
-            f"<a href='{article.get('url','')}' target='_blank' style='font-size:15px; color:white; font-weight:600;'>🔗 Read full article →</a>",
-            unsafe_allow_html=True
-        )
+    card_html = f"""
+    <div class="{card_class}">
+        <div class="card-inner">
+            <div class="card-image">
+                <img src="{image_url}" alt="article image" />
+            </div>
+            <div class="card-content">
+                <div class="{title_class}">
+                    <a href="{article.get("url", "#")}" target="_blank">
+                        {article.get("title", "No Title")}
+                    </a>
+                </div>
+                <div class="meta-tag-box">
+                    <div class="meta-left">
+                        <span class="article-meta">{meta_text}</span>
+                    </div>
+                    <div class="meta-tags">
+                        {tag_html}
+                    </div>
+                </div>
+                <div class="article-description-text">
+                    {desc}
+                </div>
+                <a class="read-link" href="{article.get("url", "#")}" target="_blank">
+                    🔗 Read full article →
+                </a>
+            </div>
+        </div>
+    </div>
+    """
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown(card_html, unsafe_allow_html=True)
 
 
 # --- Page ----
 def load_articles_page():
     """Load and display the articles page"""
 
-    # auto refresh every 60 seconds (60000 ms). Using st_autorefresh to reload the page.
     st_autorefresh(interval=60000, limit=None, key="real_estate_refresh")
 
-    # Page title
     st.title("📰 Real Estate News & Articles")
     st.markdown("Stay updated with the latest trends, insights, and news in the real estate industry.")
 
-    # --- Search Bar (Prominent placement) ---
     search_query = st.text_input(
         "Search all news articles...",
         placeholder="e.g., 'new apartment regulations' or 'villa investment'",
@@ -391,41 +462,34 @@ def load_articles_page():
     )
     st.markdown("---")
 
-    # --- Fetch and Categorize Data ---
     fetch_query = search_query.strip() if search_query.strip() else DEFAULT_QUERY
 
-    # Fetch a larger set of articles to ensure good categorization
     articles_data = get_news_data(query=fetch_query, page_size=50)
 
-    # Client-side additional filtering: If user typed something, prefer to filter local results by title+description
     if search_query.strip():
         q = search_query.lower()
         filtered_local = [
             a for a in articles_data
             if q in (a.get("title") or "").lower() or q in (a.get("description") or "").lower()
         ]
-        # If local filtering yields results, use them; otherwise keep the API results (avoid empty UI)
         if filtered_local:
             articles_data = filtered_local
 
-    # Categorize the fetched articles
     categorized_news = categorize_articles(articles_data)
 
-    # --- Display Categorized Sections ---
-
-    # Featured Article (use the most recent/popular from the entire set)
     if articles_data:
         featured = articles_data[0]
         st.subheader("🔥 Featured Article")
         render_article_card(featured, is_featured=True)
-        st.markdown("---")
 
-    # Display all categories
     for category, articles in categorized_news.items():
         if articles:
             st.header(f"🗞️ {category} ({len(articles)})")
 
-            with st.expander(f"View {len(articles)} articles in {category}", expanded=category in ["Trending", "Most Read"]):
+            with st.expander(
+                f"View {len(articles)} articles in {category}",
+                expanded=category in ["Trending", "Most Read"]
+            ):
                 cols_per_row = 2
                 for i in range(0, len(articles), cols_per_row):
                     cols = st.columns(cols_per_row)
@@ -439,7 +503,6 @@ def load_articles_page():
     if not articles_data:
         st.info("📭 No articles found. Please try a different search query.")
 
-    # Newsletter
     st.subheader("📧 Subscribe to Our Newsletter")
     col1, col2 = st.columns([3, 1])
     with col1:
@@ -451,14 +514,13 @@ def load_articles_page():
             else:
                 st.error("Please enter a valid email address")
 
+
 # Run the page function
 if __name__ == "__main__":
     load_articles_page()
-    
-    
-    
+
     chatbot_popup()  # 👈 this will render the StreetBase chat section here
-        
+
     st.markdown("""
         <div class='footer'>
             © 2025 <b>StreetBase</b> | All Rights Reserved <br>

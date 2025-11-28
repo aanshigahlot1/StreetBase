@@ -15,6 +15,29 @@ def init_favourites_state():
 def render_favourites_page():
     init_favourites_state()
 
+    # ---------- Footer CSS (same as all pages) ----------
+    st.markdown("""
+        <style>
+            .footer {
+                text-align: center;
+                color: #004D00;
+                background-color: #EDE9D5;
+                padding: 1.5rem 0;
+                margin-top: 3rem;
+                border-top: 2px solid #E2725B;
+                font-family: 'Segoe UI', sans-serif;
+            }
+            .footer a {
+                color: #E2725B;
+                text-decoration: none;
+                font-weight: 600;
+            }
+            .footer a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.title("⭐ Favourites")
     st.caption("View, manage, and export your saved properties and predictions.")
 
@@ -26,6 +49,13 @@ def render_favourites_page():
             "You don't have any favourites yet. "
             "Go to the prediction page and save some properties to see them here."
         )
+        chatbot_popup()
+        st.markdown("""
+            <div class='footer'>
+                © 2025 <b>StreetBase</b> | All Rights Reserved <br>
+                Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
+            </div>
+        """, unsafe_allow_html=True)
         return
 
     # ---------- Controls: search, sort, export ----------
@@ -54,7 +84,6 @@ def render_favourites_page():
         )
 
     with c3:
-        # Export all favourites as CSV
         df_all = pd.DataFrame(favourites)
         csv_all = df_all.to_csv(index=False)
         st.download_button(
@@ -71,24 +100,22 @@ def render_favourites_page():
     if search_term:
         search_lower = search_term.lower()
         filtered = [
-            fav
-            for fav in favourites
+            fav for fav in favourites
             if search_lower in json.dumps(fav, default=str).lower()
         ]
 
-    # ---------- Sort favourites ----------
+    # ---------- Sorting ----------
     def get_price(f):
         return f.get("predicted_price") or f.get("price") or 0
 
     def get_timestamp(f):
-        # supports 'timestamp' as string; if not available, keep None
         ts = f.get("timestamp")
         if not ts:
             return None
         try:
             return datetime.fromisoformat(ts)
         except Exception:
-            return ts  # could be any string
+            return ts
 
     if sort_by == "Date Saved (Newest First)":
         filtered = sorted(filtered, key=get_timestamp, reverse=True)
@@ -103,9 +130,8 @@ def render_favourites_page():
 
     st.markdown("### Saved Properties")
 
-    # ---------- Render each favourite ----------
+    # ---------- Render Each Favourite ----------
     for idx, fav in enumerate(filtered):
-        # Graceful fallbacks
         title = fav.get("title") or f"{fav.get('bhk', 'N/A')}BHK Property"
         city = fav.get("city", "Unknown City")
         state = fav.get("state", "Unknown State")
@@ -115,8 +141,7 @@ def render_favourites_page():
         price = get_price(fav)
         timestamp = fav.get("timestamp", "N/A")
 
-        st.markdown(
-            """
+        st.markdown("""
             <div style="
                 border-radius: 1rem;
                 padding: 1.25rem;
@@ -124,9 +149,7 @@ def render_favourites_page():
                 border: 1px solid rgba(148, 163, 184, 0.5);
                 background: rgba(15, 23, 42, 0.02);
             ">
-            """,
-            unsafe_allow_html=True,
-        )
+        """, unsafe_allow_html=True)
 
         c_main, c_actions = st.columns([3, 1])
 
@@ -154,27 +177,24 @@ def render_favourites_page():
                 unsafe_allow_html=True,
             )
 
-            # Note editor
             current_note = fav.get("note", "")
             new_note = st.text_area(
                 "Personal note",
                 value=current_note,
                 key=f"fav_note_{idx}",
-                label_visibility="collapsed",
-                placeholder="Add a short note about this property (location pros/cons, seller info, etc.)",
                 height=70,
+                label_visibility="collapsed",
+                placeholder="Add your notes (seller info, pros/cons, negotiation room, etc.)",
             )
 
             if new_note != current_note:
                 fav["note"] = new_note
 
         with c_actions:
-            st.write("")  # spacing
+            st.write("")
             st.write("")
 
-            # Remove button
             if st.button("🗑️ Remove", key=f"fav_remove_{idx}", use_container_width=True):
-                # Remove from the original list in session_state
                 try:
                     st.session_state.favourites.remove(fav)
                 except ValueError:
@@ -182,15 +202,12 @@ def render_favourites_page():
                 st.success("Removed from favourites.")
                 st.experimental_rerun()
 
-            # View details in expander
             with st.expander("📄 View Details"):
                 st.json(fav)
 
-            # Export single favourite as JSON
-            json_data = json.dumps(fav, indent=2, default=str)
             st.download_button(
                 label="📥 Export JSON",
-                data=json_data,
+                data=json.dumps(fav, indent=2, default=str),
                 file_name=f"favourite_{fav.get('id', idx)}.json",
                 mime="application/json",
                 key=f"fav_export_{idx}",
@@ -199,11 +216,12 @@ def render_favourites_page():
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        chatbot_popup()  # 👈 this will render the StreetBase chat section here
-        st.markdown("""
+    # ---------- Chatbot + Footer (placed ONCE, clean) ----------
+    chatbot_popup()
+
+    st.markdown("""
         <div class='footer'>
             © 2025 <b>StreetBase</b> | All Rights Reserved <br>
             Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
         </div>
     """, unsafe_allow_html=True)
-

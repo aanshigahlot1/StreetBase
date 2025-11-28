@@ -5,6 +5,29 @@ from datetime import datetime
 
 
 def render_emi_calculator():
+    # ---------- Inject Footer CSS (same style as About Us & Case Studies) ----------
+    st.markdown("""
+        <style>
+            .footer {
+                text-align: center;
+                color: #004D00;
+                background-color: #EDE9D5;
+                padding: 1.5rem 0;
+                margin-top: 3rem;
+                border-top: 2px solid #E2725B;
+                font-family: 'Segoe UI', sans-serif;
+            }
+            .footer a {
+                color: #E2725B;
+                text-decoration: none;
+                font-weight: 600;
+            }
+            .footer a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
     # ---------- Header ----------
     st.title("🏦 EMI Calculator")
     st.caption("Plan your home loan with a clear breakdown of EMI, interest, and total cost.")
@@ -68,7 +91,6 @@ def render_emi_calculator():
 
     # ---------- Calculate EMI ----------
     if st.button("💰 Calculate EMI", use_container_width=True):
-        # Convert lakhs to rupees
         principal = (loan_amount_lakhs - down_payment_lakhs) * 100000
 
         if principal <= 0:
@@ -83,10 +105,10 @@ def render_emi_calculator():
         elif frequency == "Quarterly":
             rate_per_period /= 4.0
             num_payments = tenure_years * 4
-        else:  # Yearly
+        else:
             num_payments = tenure_years
 
-        # EMI formula: P × r × (1 + r)^n / ((1 + r)^n − 1)
+        # EMI formula
         if rate_per_period == 0:
             emi = principal / num_payments
         else:
@@ -105,7 +127,6 @@ def render_emi_calculator():
         # ---------- Summary Section ----------
         st.markdown("### EMI Summary")
 
-        # Main EMI highlight
         st.markdown(
             f"""
             <div style="
@@ -130,23 +151,13 @@ def render_emi_calculator():
             unsafe_allow_html=True,
         )
 
-        # Small summary cards
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.metric(
-                label="Total Payment (Principal + Interest)",
-                value=f"₹{total_payment:,.0f}",
-            )
+            st.metric("Total Payment", f"₹{total_payment:,.0f}")
         with c2:
-            st.metric(
-                label="Total Interest Paid",
-                value=f"₹{total_interest:,.0f}",
-            )
+            st.metric("Total Interest Paid", f"₹{total_interest:,.0f}")
         with c3:
-            st.metric(
-                label="Total Cost (incl. Processing Fee)",
-                value=f"₹{total_cost:,.0f}",
-            )
+            st.metric("Total Cost (Incl. Fee)", f"₹{total_cost:,.0f}")
 
         # ---------- Amortization Schedule ----------
         st.markdown("### 📊 Amortization Schedule (First 12 Periods)")
@@ -171,10 +182,8 @@ def render_emi_calculator():
 
         df_schedule = pd.DataFrame(schedule_rows)
 
-        # Show only first 12 to keep UI clean
         st.dataframe(df_schedule.head(12), use_container_width=True)
 
-        # Download full schedule
         csv_data = df_schedule.to_csv(index=False)
         st.download_button(
             label="📥 Download Full Schedule as CSV",
@@ -184,11 +193,13 @@ def render_emi_calculator():
             use_container_width=True,
         )
 
-        chatbot_popup()  # 👈 this will render the StreetBase chat section here
+        chatbot_popup()
 
+        # ---------- FOOTER ----------
+        st.markdown("---")
         st.markdown("""
-        <div class='footer'>
-            © 2025 <b>StreetBase</b> | All Rights Reserved <br>
-            Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
-        </div>
-    """, unsafe_allow_html=True)
+            <div class='footer'>
+                © 2025 <b>StreetBase</b> | All Rights Reserved <br>
+                Built with ❤️ using <a href='https://streamlit.io/' target='_blank'>Streamlit</a> and AI
+            </div>
+        """, unsafe_allow_html=True)
